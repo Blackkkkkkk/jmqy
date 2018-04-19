@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.remind.RemindMapper">
+
+    <insert id="save" parameterType="java.util.List">
+        insert into t_remind (id,user_id, order_id,
+        remind_time,type)
+        select seq_remind.nextval, a.* from(
+        <foreach collection="list" item="item" index="index" separator="union all">
+            select #{item.userId,jdbcType=DOUBLE}, #{item.orderId,jdbcType=DOUBLE}, sysdate,
+            #{item.type,jdbcType=VARCHAR}
+            from dual
+        </foreach>
+        ) a
+    </insert>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.remind.Remind"
+            resultType="com.dhxx.facade.entity.remind.Remind">
+        select
+        r.id,
+        r.user_id userId,
+        r.order_id orderId,
+        r.type type,
+        r.status,
+        r.remind_time remindTime,
+        o.start_point startPoint,
+        o.end_point endPoint,
+        o.order_code orderCode,
+        o.place_time placeTime,
+        u.COMPANY_CODE
+        from t_remind r
+        left join t_order o on r.order_id = o.id
+        left join t_user u on u.id = r.user_id
+        where 1=1
+        <if test="userId != null">
+            and r.user_id = #{userId}
+        </if>
+        <if test="companyCode != null and companyCode!=''">
+            and u.COMPANY_CODE = #{companyCode}
+        </if>
+        <if test="type != null">
+            and r.type = #{type}
+        </if>
+        <if test="idList != null">
+            and r.type in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        order by r.remind_time desc
+    </select>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.remind.Remind">
+        update t_remind r
+        <set>
+            <if test="status != null">
+                r.status = #{status},
+            </if>
+        </set>
+        where r.id = #{id}
+    </update>
+
+    <select id="statistics" parameterType="com.dhxx.facade.entity.remind.Remind" resultType="java.lang.Integer">
+        select
+        count(*)
+        from t_remind r
+        <where>
+            <if test="userId != null">
+                and r.user_id = #{userId}
+            </if>
+            <if test="status != null">
+                and r.status = #{status}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="saveOne" parameterType="com.dhxx.facade.entity.remind.Remind">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select seq_user.nextval as id from dual
+        </selectKey>
+        insert into t_remind (
+        id,
+        user_id,
+        order_id,
+        remind_time,
+        type,
+        status
+        )
+        VALUES (
+        #{id},
+        #{userId,jdbcType=DOUBLE},
+        #{orderId,jdbcType=DOUBLE},
+        sysdate,
+        #{type,jdbcType=VARCHAR},
+        #{status,jdbcType=VARCHAR}
+        )
+    </insert>
+</mapper>

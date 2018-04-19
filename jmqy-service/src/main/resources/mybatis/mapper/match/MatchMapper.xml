@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.match.MatchMapper">
+
+    <resultMap id="carsMap" type="com.dhxx.facade.entity.match.Match">
+        <result column="carType" property="carType"/>
+        <result column="carAmount" property="carAmount"/>
+        <collection property="cars"
+                    column="{carType=carType,carAmount=carAmount,duration=duration,distance=distance,startLng=startLng,startLat=startLat,startArea=startArea,startCity=startCity,
+				endLng=endLng,endLat=endLat,endCity=endCity,endArea=endArea,flag=flag,tripType=tripType,charterDays=charterDays,boardingTime=boardingTime,reserveUpTime=reserveUpTime,trackBoardTime=trackBoardTime,
+				reserveOffTime=reserveOffTime,licenseType=licenseType,companyCode=companyCode,DistanceDifference=DistanceDifference,rate=rate,carPhoto=carPhoto,charteredBusCoefficient=charteredBusCoefficient,placerCode=placerCode,
+				mileagePrice=mileagePrice,AreaPlace=AreaPlace,viaPrice=viaPrice}"
+                    javaType="java.util.List" ofType="com.dhxx.facade.entity.match.Cars" select="selectCarList"/>
+    </resultMap>
+
+    <select id="selectByCarTypes" parameterType="com.dhxx.facade.entity.order.Order" resultMap="carsMap">
+        <if test="matchList !=null">
+            <foreach collection="matchList" index="index" item="item" open="" close="" separator="union">
+                select
+                #{item.carType,jdbcType=VARCHAR} carType,
+                #{item.carAmount,jdbcType=VARCHAR} carAmount,
+                #{duration,jdbcType=VARCHAR} duration,
+                #{distance,jdbcType=VARCHAR} distance,
+                #{startLng,jdbcType=VARCHAR} startLng,
+                #{startLat,jdbcType=VARCHAR} startLat,
+                #{startArea,jdbcType=VARCHAR} startArea,
+                #{startCity,jdbcType=VARCHAR} startCity,
+                #{endLng,jdbcType=VARCHAR} endLng,
+                #{endLat,jdbcType=VARCHAR} endLat,
+                #{endCity,jdbcType=VARCHAR} endCity,
+                #{endArea,jdbcType=VARCHAR} endArea,
+                #{flag,jdbcType=VARCHAR} flag,
+                #{tripType,jdbcType=VARCHAR} tripType,
+                #{charterDays,jdbcType=VARCHAR} charterDays,
+                #{boardingTime,jdbcType=VARCHAR} boardingTime,
+                #{trackBoardTime,jdbcType=VARCHAR} trackBoardTime,
+                #{reserveOffTime,jdbcType=VARCHAR} reserveOffTime,
+                #{reserveUpTime,jdbcType=VARCHAR} reserveUpTime,
+                #{licenseType,jdbcType=VARCHAR} licenseType,
+                #{createCompany,jdbcType=VARCHAR} companyCode,
+                #{DistanceDifference,jdbcType=VARCHAR} DistanceDifference,
+                #{rate,jdbcType=VARCHAR} rate,
+                #{rate,jdbcType=VARCHAR} carPhoto,
+                #{charteredBusCoefficient,jdbcType=VARCHAR} charteredBusCoefficient,
+                #{placerCode,jdbcType=VARCHAR} placerCode,
+                #{mileagePrice,jdbcType=VARCHAR} mileagePrice,
+                #{AreaPlace,jdbcType=VARCHAR} AreaPlace,
+                #{viaPrice,jdbcType=VARCHAR} viaPrice
+                from dual
+
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectCarList" parameterType="java.util.Map" resultType="com.dhxx.facade.entity.match.Cars">
+
+        SELECT l.* from
+        (
+        SELECT DISTINCT car.*,
+        decode(s.carScore,null,0,s.carScore) scores,
+        decode(s.carScoreSum,null,0,s.carScoreSum) scoreSum,
+        ca.COMPANY_CODE companyCode,
+        cp.company_name  companyName
+        from (
+        select
+        null orderCode,
+        cl.car_code carCode,
+        cl.car_num carNum,
+        null startPoint,
+        null endPoint,
+        cl.car_photo carPhoto,
+        <!-- 按公里数和时长计费 start-->
+        <if test="flag == 1">
+            <!-- 如果计价模式少于包天的价格取包天否则按计价-->
+            case when
+            trunc((
+            <!-- 原先的地区系数形式-->
+            decode(pr1.coefficient,null,1,pr1.coefficient)*
+            <!-- 首未点规划里程 ,如果有途经要减去途经的里程-->
+            <choose>
+                <when test="DistanceDifference != null and DistanceDifference !=''">
+                    case when ((#{distance}-to_number(#{DistanceDifference}))/1000.0) &lt; 1 then 1 else
+                    ((#{distance}-#{DistanceDifference})/1000.0) end *
+                </when>
+                <otherwise>
+                    case when (#{distance}/1000.0) &lt; 1 then 1 else (#{distance}/1000.0) end *
+                    <!-- (#{distance}/1000.0) -->
+                </otherwise>
+            </choose>
+            <!-- pr2 里程单价 -->
+            decode(pr10.coefficient,null,1,pr10.coefficient)*
+            <!-- pr3 车型系数-->
+            decode(pr3.coefficient,null,1,pr3.coefficient)*
+            <!-- pr4 车辆新旧系数(年) -->
+            decode(pr4.coefficient,null,1,pr4.coefficient)*
+            <!-- pr5 时长系数-->
+            decode(pr5.coefficient,null,1,pr5.coefficient)
+            <!-- 目的地系数 -->
+            <!--   原本的目的地系数
+            <choose>
+                <when test="startArea !=null and startArea !=''  and endArea !=null and endArea !='' ">*GETENDPLACE(#{startArea}, #{endArea})</when>
+                <when test="(startArea ==null or startArea =='')  and endArea !=null and endArea !='' ">*GETENDPLACE(#{startCity}, #{endArea})</when>
+                <when test="startArea !=null and startArea !=''  and (endArea ==null or endArea =='')">*GETENDPLACE(#{startArea}, #{endCity})</when>
+                <when test="(startArea ==null or startArea =='')  and (endArea ==null or endArea =='')">*GETENDPLACE(#{startCity}, #{endCity})</when>
+            </choose>
+            -->
+            <!--*GETENDPLACE(#{AreaPlace},decode(#{endArea},null,#{endCity},#{endArea}))-->
+            <choose>
+                <when test="endArea!=null">
+                    *GETENDPLACE(#{AreaPlace},#{endArea})
+                </when>
+                <otherwise>
+                    *GETENDPLACE(#{AreaPlace},#{endCity})
+                </otherwise>
+            </choose>
+            <!--  如果有途经点,加上途经里程额 -->
+            <if test="DistanceDifference != null and DistanceDifference !=''">
+                + #{viaPrice}
+                <if test="rate != null and rate !=''">
+                    *#{rate}
+                </if>
+
+            </if>
+            <!--往返包车计价要加上返程的里程数计价，返程里程数取50% end-->
+            +
+            <!--  (GetDistance(cl.lng, cl.lat, #{startLng}, #{startLat})*2/1000)*
+              decode(pr7.coefficient,null,0,pr7.coefficient)
+              -->
+            GETEMPTYPRICE((GetDistance(cl.lng, cl.lat, #{startLng}, #{startLat})*2/1000),cl.companyCode,16)
+            <!-- 包车天数系数*往返日期差-->
+            <if test="tripType == 2">
+                +
+                DECODE(SIGN (TRUNC (#{trackBoardTime}) - TRUNC (#{boardingTime})),-
+                1,1,TRUNC (#{trackBoardTime}) - TRUNC (#{boardingTime}))
+                *#{charteredBusCoefficient}
+            </if>
+            )
+            <!-- 判断是否用户登陆，如果登录查询是否有优惠 start-->
+            <if test="companyCode != null and companyCode != ''">
+                *decode(pr9.coefficient,null,1,pr9.coefficient)
+            </if>
+            ,-2)
+            &gt;
+            decode(pr8.coefficient,null,600,pr8.coefficient)*1
+            then
+            trunc((
+            <!-- 原先的地区系数形式-->
+            decode(pr1.coefficient,null,1,pr1.coefficient)*
+            <!-- 首未点规划里程 ,如果有途经要减去途经的里程-->
+            <choose>
+                <when test="DistanceDifference != null and DistanceDifference !=''">
+                    case when ((#{distance}-to_number(#{DistanceDifference}))/1000.0) &lt; 1 then 1 else
+                    ((#{distance}-#{DistanceDifference})/1000.0) end *
+                </when>
+                <otherwise>
+                    case when (#{distance}/1000.0) &lt; 1 then 1 else (#{distance}/1000.0) end *
+                    <!-- (#{distance}/1000.0) -->
+                </otherwise>
+            </choose>
+            <!-- pr2 里程单价 -->
+            decode(pr10.coefficient,null,1,pr10.coefficient)*
+            <!-- pr3 车型系数-->
+            decode(pr3.coefficient,null,1,pr3.coefficient)*
+            <!-- pr4 车辆新旧系数(年) -->
+            decode(pr4.coefficient,null,1,pr4.coefficient)*
+            <!-- pr5 时长系数-->
+            decode(pr5.coefficient,null,1,pr5.coefficient)
+            <!-- 目的地系数 -->
+            <!--   原本的目的地系数
+            <choose>
+                <when test="startArea !=null and startArea !=''  and endArea !=null and endArea !='' ">*GETENDPLACE(#{startArea}, #{endArea})</when>
+                <when test="(startArea ==null or startArea =='')  and endArea !=null and endArea !='' ">*GETENDPLACE(#{startCity}, #{endArea})</when>
+                <when test="startArea !=null and startArea !=''  and (endArea ==null or endArea =='')">*GETENDPLACE(#{startArea}, #{endCity})</when>
+                <when test="(startArea ==null or startArea =='')  and (endArea ==null or endArea =='')">*GETENDPLACE(#{startCity}, #{endCity})</when>
+            </choose>
+            -->
+            <!--*GETENDPLACE(#{AreaPlace},decode(#{endArea},null,#{endCity},#{endArea}))-->
+            <choose>
+                <when test="endArea!=null">
+                    *GETENDPLACE(#{AreaPlace},#{endArea})
+                </when>
+                <otherwise>
+                    *GETENDPLACE(#{AreaPlace},#{endCity})
+                </otherwise>
+            </choose>
+            <!--  如果有途经点,加上途经里程额 -->
+            <if test="DistanceDifference != null and DistanceDifference !=''">
+                + #{viaPrice}
+                <if test="rate != null and rate !=''">
+                    *#{rate}
+                </if>
+            </if>
+            <!--往返包车计价要加上返程的里程数计价，返程里程数取50% end-->
+            +
+          <!--  (GetDistance(cl.lng, cl.lat, #{startLng}, #{startLat})*2/1000)*
+            decode(pr7.coefficient,null,0,pr7.coefficient)
+            -->
+            GETEMPTYPRICE((GetDistance(cl.lng, cl.lat, #{startLng}, #{startLat})*2/1000),cl.companyCode,16)
+            <!-- 包车天数系数*往返日期差-->
+            <if test="tripType == 2">
+                +
+                DECODE(SIGN (TRUNC (#{trackBoardTime}) - TRUNC (#{boardingTime})),-
+                1,1,TRUNC (#{trackBoardTime}) - TRUNC (#{boardingTime}))
+                *#{charteredBusCoefficient}
+            </if>
+            )
+            <!-- 判断是否用户登陆，如果登录查询是否有优惠 start-->
+            <if test="companyCode != null and companyCode != ''">
+                *decode(pr9.coefficient,null,1,pr9.coefficient)
+            </if>
+            ,-2)
+            else
+            decode(pr8.coefficient,null,600,pr8.coefficient)*1
+            end
+            <!-- 判断是否用户登陆，如果登录查询是否有优惠 end-->
+            prices,
+        </if>
+        <!-- 按公里数和时长计费 end-->
+        <!-- 按车/天计费 start-->
+        <if test="flag == 2">
+            decode(pr8.coefficient,null,600,pr8.coefficient)*#{charterDays} prices,
+        </if>
+        <!-- 按车/天计费 end-->
+        1 type
+        from (
+        SELECT
+        c.car_code,
+        c.car_num,
+        c.seat_number,
+        c.car_photo,
+        ceil(months_between(sysdate, c.made_date) / 12.0) madeDate,
+        c.lng,
+        c.lat,
+        c.company_code companyCode
+        from t_car c
+
+        WHERE c.status =0
+        and c.CAR_TYPE = #{carType}
+        <if test="licenseType == 1">
+            and c.OPERATION_LICENSE_EFFECT is null
+        </if>
+        and c.CAR_CODE not in (
+
+        SELECT o.CAR_CODE from T_ORDER o
+        where o.RECORD_STATUS = 0
+
+        and (o.status in (-3,-1,0,1,2,5,7) or o.status in (decode(o.charter_code,#{placerCode},1,6))
+        or o.status in (decode(o.ORDER_PLACER,#{placerCode},1,6))
+        )
+        and o.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and o.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        GROUP BY o.CAR_CODE
+
+        UNION
+
+        SELECT b.CAR_CODE from T_BACK_ORDER b
+        LEFT JOIN t_order o ON b.ORDER_CODE = o.BACK_ORDER_CODE
+        where b.RECORD_STATUS = 0 and b.type = 2 and
+        (
+        b.STATUS IN (0, 1)
+        OR b.status IN (
+        DECODE (o.charter_code ,#{placerCode}, 1, 3)
+        )
+        )
+
+        and b.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and b.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        GROUP BY b.CAR_CODE
+
+        UNION
+
+        SELECT ct.CAR_CODE from t_car_travel ct
+        where ct.RECORD_STATUS = 0
+        <!-- 原本的
+        and ct.start_time &lt;= #{reserveOffTime}
+        and ct.end_time &gt;= #{reserveUpTime}
+
+        -->
+        and ct.start_time &lt;= sysdate
+        and ct.end_time &gt;= sysdate
+        GROUP BY ct.CAR_CODE
+
+        )) cl
+        <!-- 按公里数和时长计费 start-->
+        <!-- 根据地区筛选系数-->
+        <if test="flag == 1">
+            left join t_price_rule pr1 on pr1.rule_value like '%'||
+            <if test="AreaPlace !=null and AreaPlace!=''">
+                #{AreaPlace}
+            </if>
+            ||'%' and pr1.rule_type =1
+            <!--
+            left join t_price_rule pr2 on pr2.parent_id = pr1.id and pr2.rule_type=2
+            -->
+            left join t_price_rule pr2 on pr2.parent_id = pr1.id and pr2.rule_type=2 and ( to_number(pr2.default_range)
+            &lt;= (#{distance}/1000) and to_number(pr2.to_range) &gt;= (#{distance}/1000) )
+            left join t_price_rule pr3 on pr3.parent_id = pr1.id and pr3.rule_type=3 and ( to_number(pr3.default_range)
+            &lt;= cl.seat_number and to_number(pr3.to_range) &gt;= cl.seat_number )
+            left join t_price_rule pr4 on pr4.parent_id = pr1.id and pr4.rule_type=4 and ( to_number(pr4.default_range)
+            &lt; cl.madeDate and to_number(pr4.to_range) &gt;= cl.madeDate )
+            <!--  时长系数：往返的时候就 包车时间+预估时间 -->
+            <choose>
+                <when test="tripType == 2">
+                    left join t_price_rule pr5 on pr5.parent_id = pr1.id and pr5.rule_type=5 and (
+                    to_number(pr5.default_range)
+                    &lt;= (to_number((((to_date(TO_CHAR(#{trackBoardTime} , 'yyyy-mm-dd
+                    hh24:mi:ss'), 'yyyy-mm-dd hh24:mi:ss') - to_date(TO_CHAR(#{boardingTime} , 'yyyy-mm-dd hh24:mi:ss'),
+                    'YYYY-MM-DD HH24:mi:ss')) * 24*60*60))+to_number(#{duration}))/3600.0) and to_number(pr5.to_range)
+                    &gt;= (to_number((((to_date(TO_CHAR(#{trackBoardTime} , 'yyyy-mm-dd
+                    hh24:mi:ss'), 'yyyy-mm-dd hh24:mi:ss') - to_date(TO_CHAR(#{boardingTime} , 'yyyy-mm-dd hh24:mi:ss'),
+                    'YYYY-MM-DD HH24:mi:ss')) * 24*60*60))+to_number(#{duration}))/3600.0))
+                </when>
+                <!--  时长系数：单程的时候预估时间 -->
+                <otherwise>
+                    left join t_price_rule pr5 on pr5.parent_id = pr1.id and pr5.rule_type=5 and (
+                    to_number(pr5.default_range)
+                    &lt;= (#{duration}/3600.0) and to_number(pr5.to_range) &gt;= (#{duration}/3600.0))
+                </otherwise>
+            </choose>
+            left join t_price_rule pr7 on pr7.rule_type=7 and pr7.company_code = cl.companyCode
+            left join t_price_rule pr8 on pr8.parent_id = pr1.id and pr8.rule_type=8 and ( to_number(pr8.default_range)
+            &lt;= cl.seat_number and to_number(pr8.to_range) &gt;= cl.seat_number )
+            left join t_price_rule pr10 on pr10.parent_id = pr1.id and pr10.rule_type=2 and ( to_number(pr10.default_range)
+            &lt;=
+            <choose>
+                <when test="DistanceDifference != null and DistanceDifference!=''">
+
+                    ((#{distance}-DECODE(#{DistanceDifference},null,0,'',0,#{DistanceDifference})) /1000) and to_number(pr10.to_range) &gt;= ((#{distance}-DECODE(#{DistanceDifference},null,0,'',0,#{DistanceDifference}))/1000))
+                </when>
+                <otherwise>
+                    (#{distance}/1000) and to_number(pr10.to_range) &gt;= (#{distance}/1000))
+                </otherwise>
+            </choose>
+        </if>
+        <!-- 按公里数和时长计费 end-->
+        <!-- 按车/天计费 start-->
+        <if test="flag == 2">
+            left join t_price_rule pr1 on pr1.rule_value like '%'||
+            <if test="AreaPlace !=null and AreaPlace!=''">
+                #{AreaPlace}
+            </if>
+            ||'%' and pr1.rule_type =1
+            left join t_price_rule pr8 on pr8.parent_id = pr1.id and pr8.rule_type=8 and ( to_number(pr8.default_range)
+            &lt;= cl.seat_number and to_number(pr8.to_range) &gt;= cl.seat_number )
+        </if>
+        <!-- 按车/天计费 end-->
+        <!-- 判断是否用户登陆，如果登录查询是否有优惠 start-->
+        <if test="companyCode != null and companyCode != ''">
+            left join t_price_rule pr9 on pr9.rule_type=9 and pr9.company_code = #{companyCode}
+        </if>
+        <!-- 判断是否用户登陆，如果登录查询是否有优惠 end-->
+        <!-- 按公里数和时长计费并且是单程 start-->
+        <if test="flag == 1 and tripType == 1">
+            UNION ALL
+
+            SELECT b.ORDER_CODE orderCode, b.CAR_CODE carCode, b.CAR_num carNum, b.START_POINT startPoint,b.END_POINT
+            endPoint, ca.car_photo carPhoto, b.DISCOUNT_PRICES prices,2 type
+            from T_BACK_ORDER b
+            left join t_car ca on b.car_code = ca.car_code
+            LEFT JOIN t_order o ON b.ORDER_CODE = o.BACK_ORDER_CODE
+            where b.record_status = 0 and
+            (
+            b.STATUS =0
+            OR b.status = (DECODE (o.charter_code,#{placerCode},3,NULL,1,1)
+            )
+            )
+            and b.CAR_TYPE = #{carType}
+            and ca.status = 0
+            and b.EFFE_SE_TIME >= SYSDATE
+            and b.earliest_departure_time &lt;= #{boardingTime}
+            and b.latest_departure_time &gt;= #{boardingTime}
+            and b.START_CITY = #{startCity} and b.END_CITY = #{endCity}
+            and ((GetDistance(b.START_LNG, b.START_LAT, #{startLng}, #{startLat})*2
+            +GetDistance(b.END_LNG, b.END_LAT, #{endLng}, #{endLat})*2 + #{distance}) - b.DISTANCE)
+            &lt;= b.range*1000
+        </if>
+        <!-- 按公里数和时长计费并且是单程 end-->
+        ) car
+        LEFT JOIN (select
+        o.car_code,
+        ROUND(sum(e.to_car_score)/count(*),1) carScore,
+        count(*)carScoreSum
+        from t_order o
+        inner join t_evaluation e on e.order_code = o.order_code
+        where o.record_status = 0 and e.to_car_score is not null
+        group by o.car_code) s on s.car_code = car.carCode
+        LEFT JOIN t_car ca on car.carCode = ca.CAR_CODE
+        LEFT JOIN t_company cp on ca.COMPANY_CODE = cp.COMPANY_CODE
+
+        WHERE
+        car.carCode NOT IN (
+        SELECT
+        c.CAR_CODE code
+        FROM
+        t_car c
+        WHERE
+        c.RECORD_STATUS = 0
+        AND c.company_code = cp.COMPANY_CODE
+        AND c.driving_license_invalid IS NOT NULL
+        AND CEIL (
+        c.driving_license_invalid - SYSDATE
+        ) &lt; 0
+        UNION ALL
+        SELECT
+        c.CAR_CODE code
+        FROM
+        t_car c
+        WHERE
+        c.RECORD_STATUS = 0
+        AND c.company_code = cp.COMPANY_CODE
+        AND c.operation_license_invalid IS NOT NULL
+        AND CEIL (
+        c.operation_license_invalid - SYSDATE
+        ) &lt; 0
+        UNION ALL
+        SELECT
+        c.CAR_CODE code
+        FROM
+        t_car c
+        WHERE
+        c.RECORD_STATUS = 0
+        AND c.company_code = cp.COMPANY_CODE
+        AND c.policy_invalid IS NOT NULL
+        AND CEIL (c.policy_invalid - SYSDATE) &lt; 0
+        )
+
+        ORDER BY car.type desc, car.prices asc,scores desc) l
+        <!-- WHERE ROWNUM &lt;= #{carAmount} -->
+    </select>
+
+    <select id="selectLines" parameterType="com.dhxx.facade.entity.order.Order"
+            resultType="com.dhxx.facade.entity.match.Cars">
+
+        SELECT l.* from
+        (
+        SELECT car.*,
+        decode(s.carScore,null,0,s.carScore) scores,
+        decode(s.carScoreSum,null,0,s.carScoreSum) scoreSum
+        from (
+
+        SELECT b.ORDER_CODE orderCode, b.CAR_CODE carCode, b.CAR_num carNum, b.car_type carType, b.START_POINT
+        startPoint,b.END_POINT endPoint, b.DISCOUNT_PRICES prices,2 type
+        from T_BACK_ORDER b
+        where b.record_status = 0 and b.STATUS = 0
+        and trunc(b.earliest_departure_time,'dd') = trunc(#{boardingTime,jdbcType=TIMESTAMP},'dd')
+        and b.START_CITY = #{startCity} and b.END_CITY = #{endCity}
+        and ((GetDistance(b.START_LNG, b.START_LAT, #{startLng}, #{startLat})*2
+        +GetDistance(b.END_LNG, b.END_LAT, #{endLng}, #{endLat})*2 + #{distance}) - b.DISTANCE)
+        &lt;= b.range*1000
+
+        ) car
+
+
+        LEFT JOIN (select
+        o.car_code,
+        ROUND(sum(e.to_car_score)/count(*),1) carScore,
+        count(*)carScoreSum
+        from t_order o
+        inner join t_evaluation e on e.order_code = o.order_code
+        where o.record_status = 0 and e.to_car_score is not null
+        group by o.car_code) s on s.car_code = car.carCode
+
+        ORDER BY car.prices asc) l
+        <!-- WHERE ROWNUM &lt;= 3 -->
+
+    </select>
+
+    <select id="selectCars" parameterType="com.dhxx.facade.entity.order.Order"
+            resultType="com.dhxx.facade.entity.transport.car.Car">
+
+        SELECT cc.* from
+        (SELECT
+        c.car_code carCode,
+        c.car_num carNum,
+        c.driver_code driverCode,
+        c.car_type carType,
+        c.seat_number seatNumber,
+        decode(ot.doTime, null, add_months(sysdate,-24),ot.doTime) doTime,
+        decode(ot.counts, null, 0 ,ot.counts) counts
+        from t_car c
+
+        left join (
+
+        SELECT o.CAR_CODE, count(*) counts, max(o.BOARDING_TIME) doTime from T_ORDER o
+        where o.RECORD_STATUS = 0
+        and o.transporter_code = #{transporterCode}
+        and o.status = 3
+        and o.BOARDING_TIME &gt;= add_months(sysdate,-12)
+        GROUP BY o.CAR_CODE
+
+        ) ot on ot.CAR_CODE = c.car_code
+
+        WHERE c.status =0
+        <if test="seatNumber != null">
+            and c.seat_number &gt;= #{seatNumber}
+        </if>
+        and c.company_code = #{transporterCode}
+        and (c.CAR_CODE not in (
+
+        SELECT o.CAR_CODE from T_ORDER o
+        where o.RECORD_STATUS = 0
+        and o.transporter_code = #{transporterCode}
+        and o.status in (-3,-1,0,1,2,5,6,7)
+        and o.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and o.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        <if test="orderCode != null and orderCode != ''">
+            and o.order_code != #{orderCode}
+        </if>
+        GROUP BY o.CAR_CODE
+
+        UNION
+
+        SELECT b.CAR_CODE from T_BACK_ORDER b
+        where b.RECORD_STATUS = 0 and b.type = 2 and b.STATUS in (0,1)
+        and b.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and b.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        GROUP BY b.CAR_CODE
+
+        UNION
+
+        SELECT ct.CAR_CODE from t_car_travel ct
+        where ct.RECORD_STATUS = 0
+        <!-- 原本的
+         and ct.start_time &lt;= #{reserveOffTime}
+         and ct.end_time &gt;= #{reserveUpTime}
+
+         -->
+        and ct.start_time &lt;= sysdate
+        and ct.end_time &gt;= sysdate
+        GROUP BY ct.CAR_CODE
+
+        )
+        <if test="carCode != null and carCode != ''">
+            or c.car_code = #{carCode}
+        </if>
+        )
+        ) cc
+        WHERE
+        CC.CARCODE not in
+        (
+        select CODE from (
+
+        select
+        c.id id,
+        c.CAR_CODE code,
+        c.CAR_NUM name,
+        c.driving_license_effect effect,
+        c.driving_license_invalid invalid,
+        ceil(c.driving_license_invalid - sysdate) expireDays,
+        3 type,
+        2 subjectType
+        from t_car c
+        where c.RECORD_STATUS = 0
+
+        and c.company_code = #{transporterCode}
+        and c.driving_license_invalid is not null
+        and ceil(c.driving_license_invalid - sysdate) &lt; 0
+
+        UNION ALL
+        select
+        c.id id,
+        c.CAR_CODE code,
+        c.CAR_NUM name,
+        c.operation_license_effect effect,
+        c.operation_license_invalid invalid,
+        ceil(c.operation_license_invalid - sysdate) expireDays,
+        4 type,
+        2 subjectType
+        from t_car c
+        where c.RECORD_STATUS = 0
+        and c.company_code = #{transporterCode}
+        and c.operation_license_invalid is not null
+        and ceil(c.operation_license_invalid - sysdate) &lt; 0
+
+        UNION ALL
+
+        select
+        c.id id,
+        c.CAR_CODE code,
+        c.CAR_NUM name,
+        c.policy_effect effect,
+        c.policy_invalid invalid,
+        ceil(c.policy_invalid - sysdate) expireDays,
+        5 type,
+        2 subjectType
+        from t_car c
+        where c.RECORD_STATUS = 0
+        and c.company_code = #{transporterCode}
+        and c.policy_invalid is not null
+        and ceil(c.policy_invalid - sysdate) &lt; 0
+        )
+        )
+        order by cc.doTime asc
+    </select>
+
+    <select id="selectDrivers" parameterType="com.dhxx.facade.entity.order.Order"
+            resultType="com.dhxx.facade.entity.transport.driver.Driver">
+
+        SELECT
+        d.code code,
+        d.name name
+        from t_driver d
+
+        WHERE d.status =0 and d.record_status = 0
+        and(
+        d.code NOT IN (
+
+        select ce.code from (
+        select
+        d.id id,
+        d.code code,
+        d.name name,
+        d.driving_license_effect effect,
+        d.driving_license_invalid invalid,
+        ceil(d.driving_license_invalid - sysdate) expireDays,
+        2 type,
+        1 subjectType
+        from t_driver d
+        where d.RECORD_STATUS = 0
+        and d.company_code = #{transporterCode}
+        and d.driving_license_invalid is not null
+        and ceil(d.driving_license_invalid - sysdate) &lt; 0
+
+        UNION ALL
+
+        select
+        d.id id,
+        d.code code,
+        d.name name,
+        d.work_license_effect effect,
+        d.work_license_invalid invalid,
+        ceil(d.work_license_invalid - sysdate) expireDays,
+        1 type,
+        1 subjectType
+        from t_driver d
+        where d.RECORD_STATUS = 0
+        and d.company_code = #{transporterCode}
+        and d.work_license_invalid is not null
+        and ceil(d.work_license_invalid - sysdate) &lt; 0
+        ) ce
+        )
+        )
+        and d.company_code = #{transporterCode}
+        and (d.code not in (
+        SELECT nvl(driver_code,-1) from (
+        SELECT o.driver_code from T_ORDER o
+        where o.RECORD_STATUS = 0
+        and o.transporter_code = #{transporterCode}
+        and o.status in (-3,-1,0,1,2,5,6,7)
+        and o.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and o.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        <if test="orderCode != null and orderCode != ''">
+            and o.order_code != #{orderCode}
+        </if>
+        GROUP BY o.driver_code
+
+        UNION
+
+        SELECT o.vice_driver_code from T_ORDER o
+        where o.RECORD_STATUS = 0
+        and o.transporter_code = #{transporterCode}
+        and o.status in (-3,-1,0,1,2,5,6,7)
+        and o.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and o.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        <if test="orderCode != null and orderCode != ''">
+            and o.order_code != #{orderCode}
+        </if>
+        GROUP BY o.vice_driver_code
+
+        UNION
+
+        SELECT c.driver_code from T_BACK_ORDER b
+        left join t_car c on c.car_code = b.car_code
+        where b.RECORD_STATUS = 0 and b.type = 2 and b.STATUS in (0,1)
+        and b.RESERVE_UP_TIME &lt;= #{reserveOffTime}
+        and b.RESERVE_OFF_TIME &gt;= #{reserveUpTime}
+        GROUP BY c.driver_code
+        )
+
+        )
+        <if test="driverCode != null and driverCode != ''">
+            or d.code = #{driverCode}
+        </if>
+        <if test="viceDriverCode != null and viceDriverCode != ''">
+            or d.code = #{viceDriverCode}
+        </if>
+        )
+
+    </select>
+
+</mapper>

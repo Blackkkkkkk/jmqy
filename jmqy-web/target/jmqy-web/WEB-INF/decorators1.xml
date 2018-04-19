@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/layouts/">
+	<excludes>
+		<pattern>/static/*</pattern>
+        <pattern>/search/charter</pattern>
+	</excludes>
+
+    <!-- 去掉头部和底部 -->
+    <decorator name="dialog" page="dialog.jsp">
+        <pattern>/login**</pattern>
+        <pattern>/transport/car/form</pattern>
+        <pattern>/transport/driver/form</pattern>
+        <pattern>/transport/carTravel/form</pattern>
+        <pattern>/transport/*/map</pattern>
+        <pattern>/transport/order/detail</pattern>
+        <pattern>/transport/order/accept</pattern>
+        <pattern>/transport/order/finish</pattern>
+        <pattern>/transport/order/evaluate</pattern>
+        <pattern>/transport/evaluate/detail</pattern>
+        <pattern>/transport/complaint/detail</pattern>
+        <pattern>/transport/backOrder/query</pattern>
+        <pattern>/transport/user/form</pattern>
+        <pattern>/transport/role/form</pattern>
+        <pattern>/transport/role/authorize</pattern>
+        <pattern>/transport/order/delay</pattern>
+        <pattern>/charter/user/form</pattern>
+        <pattern>/charter/role/form</pattern>
+        <pattern>/charter/role/authorize</pattern>
+        <pattern>/charter/order/map</pattern>
+        <pattern>/charter/order/query</pattern>
+        <pattern>/charter/order/InvoiceTemplate</pattern>
+        <pattern>/charter/invoice/detil</pattern>
+        <pattern>/charter/invoice/Address/addAddress</pattern>
+        <pattern>/charter/wechat/scanPay</pattern>
+        <pattern>/charter/wechat/creDitPay</pattern>
+        <pattern>/charter/wechat/newscanPay</pattern>
+        <pattern>/charter/center/beCompany</pattern>
+        <pattern>/search/evaluate*</pattern>
+        <pattern>/search/map</pattern>
+        <pattern>/search/carImg</pattern>
+    </decorator>
+    <!-- 前台网站 -->
+	<decorator name="default" page="default.jsp">
+		<!--<pattern>/index**</pattern>-->
+		<pattern>/user**</pattern>
+		<pattern>/order**</pattern>
+		<pattern>/transport**</pattern>
+		<pattern>/charter**</pattern>
+		<pattern>/register**</pattern>
+		<pattern>/wechat**</pattern>
+	</decorator>
+
+    <!-- 后台管理 -->
+    <decorator name="taglibs" page="taglibs.jsp">
+        <pattern>/main**</pattern>
+    </decorator>
+
+    <decorator name="iframe" page="iframe.jsp">
+        <pattern>/permission**</pattern>
+        <pattern>/credit**</pattern>
+        <pattern>/remind**</pattern>
+        <pattern>/score**</pattern>
+        <pattern>/tackle**</pattern>
+        <pattern>/sys**</pattern>
+        <pattern>/rule**</pattern>
+    </decorator>
+	
+</decorators>

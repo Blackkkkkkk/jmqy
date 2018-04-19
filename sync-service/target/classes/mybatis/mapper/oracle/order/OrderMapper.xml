@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sync.service.mapper.oracle.OrderMapper">
+
+    <resultMap id="OrderMap" type="java.util.Map">
+        <result column="order_code" property="orderCode"></result>
+        <result column="car_num" property="carNum"></result>
+        <result column="startlongLat" property="startlongLat"></result>
+        <result column="start_lng" property="startLng"></result>
+        <result column="start_lat" property="startLat"></result>
+        <result column="endlongLat" property="endlongLat"></result>
+        <result column="end_lng" property="endLng"></result>
+        <result column="end_lat" property="endLat"></result>
+        <result column="boarding_time" property="boardingTime"></result>
+        <result column="debus_time" property="debusTime"></result>
+    </resultMap>
+
+
+    <select id="find" parameterType="com.sync.facade.entity.oracle.Order" resultMap="OrderMap">
+        SELECT
+        ORDER_CODE,
+        CAR_NUM,
+        CONCAT (
+        CONCAT (START_LAT, ','),
+        START_LNG
+        ) AS startlongLat,
+        START_LNG,
+        START_LAT,
+        CONCAT (
+        CONCAT (END_LAT, ','),
+        END_LNG
+        ) AS endlongLat,
+        END_LNG,
+        END_LAT,
+        BOARDING_TIME,
+        DEBUS_TIME
+        FROM
+        T_ORDER
+        WHERE
+        DEBUS_TIME IS NOT NULL
+        <if test="idList != null">
+            and STATUS in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+</mapper>

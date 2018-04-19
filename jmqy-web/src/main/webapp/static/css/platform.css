@@ -1,0 +1,248 @@
+.box-z{
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+body{
+    /*background:#f0f0f0;*/
+    min-width:1200px;
+}
+header{
+	background:#0683b1;
+	/*position:fixed;*/
+	width:100%; 
+	height:60px;
+	line-height: 60px;
+	min-width:1200px;
+}
+aside{
+	width:150px  !important;
+	/*width:13% !important;*/
+	border:none !important;
+	background:#0683b1 !important;
+}
+section{
+	/*width:87% !important;*/
+	/*min-width:1044px;*/
+	float:right;
+	margin:0 !important;
+	overflow:visible !important;
+}
+main{
+	width:100% !important;
+	float:none !important;
+	min-width:1200px;
+}
+footer{
+	background:#066284;
+	position:fixed;
+	bottom:0;
+	height:40px;
+	width:100%;
+	min-width:1200px;
+}
+.pla_box{
+	/*margin:4px 2px;*/
+	/*background:#fff;*/
+	/*border:1px solid #d2d2d2;*/
+	height:100%;
+	/*padding:1px;*/
+}
+.logo_pla{
+	float:left;
+}
+.logo_pla h1{
+	color:#fff;
+	font-weight:bold;
+	font-size:25px;
+	margin-left:30px;
+}
+.logo_pla h1 img{
+	width:50px;
+}
+.header_right{
+	float:right;
+	margin-right:50px;
+}
+.header_right span{
+	float:left;
+	margin-right:20px;
+	color:#fff;
+	font-size:16px;
+	font-family:'黑体';
+}
+.header_right a{
+	color:#fff;
+	background:#04749c;
+	border:1px solid #1aa2d4;
+	border-radius:4px;
+	display:block;
+	width:76px;
+	height:34px;
+	text-align:center;
+	line-height:34px;
+	margin-top:12px;
+	float:left;
+}
+.header_right a i{
+	margin-right:5px;
+}
+/****aside****/
+.pla_title{
+	background:#066284;
+	height:20px;
+	line-height: 20px;
+	text-align:center;
+}
+.pla_title h1{
+	color:#5abbfd;
+	font-size: 14px;
+}
+.pla_list li{
+	background:none;
+}
+.pla_list li a{
+	color:#fff;
+}
+.pla_list dl.pla_hide{
+	position:absolute;
+	left:150px;
+	top:60px;
+	width:150px;
+}
+.pla_list_action,.pla_list li:hover{
+	background: #0c95c8 !important;
+}
+.aside_right{
+	float:left;
+	width:150px;
+	background:#d9dde6;
+	display:none;
+}
+/****title2****/
+.pla_title2{
+	background:#ececec;
+	height:32px;
+	line-height: 32px;
+	padding-left:5px;
+}
+.pla_iframe{
+	overflow:auto;
+	margin-top:10px;
+	margin-right:10px;
+}
+.button_left{
+	float:left;
+    margin-top:10px;
+}
+.button_right{
+	float:right;
+}
+.pla_hide{
+	display:none;
+}
+
+.plat_box{
+	margin:10px;
+}
+.logout_left{
+	background:url(../images/logout.png) no-repeat left center;
+	width:500px;
+	height:378px;
+	margin-top:17%;
+	float:left;
+}
+.logout_right{
+	float:right;
+	margin-top:17%;
+}
+.logout_right h1{
+	font-size:56px;
+	text-shadow:2px 2px 2px #333;
+	font-weight:bold;
+	color:#fff;
+	margin-bottom:60px;
+}
+.logout_box{
+	width:382px;
+	height:266px;
+	margin-left:90px;
+	background:#0785b3;
+	border:2px solid #64b6d5;
+	box-shadow:0px 0px 5px #999;
+	border-radius:4px;
+	padding:5px;
+}
+.logout_info{
+	background:url(box_bg.jpg) repeat-x;
+	width:382px;
+	height:266px;
+}
+.logout_info h2{
+	font-size:18px;
+	color:#036d95;
+	line-height: 40px;
+	text-align:center;
+	font-weight:bold;
+}
+.input-append .add-on, .input-prepend .add-on {
+    display: inline-block;
+    width: auto;
+    height: 30px;
+    min-width: 16px;
+    padding: 4px 12px;
+    width:20px;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 30px;
+    text-align: center;
+    text-shadow: 0 1px 0 #fff;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    margin-right: -1px;
+    margin-top:15px;
+    border-radius: 4px 0 0 4px;
+    margin-left:20px;
+}
+.span2{
+	height: 30px;
+	padding: 4px 6px;
+	color: #555;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	float: none;
+	margin-left: 0;
+	position: relative;
+	margin-bottom: 0;
+	vertical-align: top;
+	border-radius: 0 4px 4px 0;
+	display: inline-block;
+	width: 286px;
+	font-size:12px;
+	margin-top:15px;
+}
+.input-append, .input-prepend {
+    margin-bottom: 5px;
+    font-size: 0;
+    white-space: nowrap;
+}
+.logout_info input[type="checkbox"]{
+	position:relative;
+	top:3px;
+}
+.logout_info p{
+	color:#999;
+	margin:10px 0;
+	margin-left:66px;
+}
+.layui-btn-normal{
+    background-color: #009688 !important;
+}
+/**分页**/
+.layui-laypage-em{
+    background-color: #009688 !important;
+}
+.layui-form-select dl dd.layui-this{
+    background-color: #009688 !important;
+}

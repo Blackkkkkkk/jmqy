@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.charter.evaluate.EvaluateMapper">
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.charter.evaluate.Evaluate">
+        merge into t_evaluation e using
+        (
+        select
+        #{id,jdbcType=INTEGER} id,
+        #{userId,jdbcType=INTEGER} userId,
+        #{orderCode,jdbcType=VARCHAR} orderCode,
+        #{toDriverContent,jdbcType=VARCHAR} toDriverContent,
+        #{toDriverScore,jdbcType=INTEGER} toDriverScore,
+        #{toCarContent,jdbcType=VARCHAR} toCarContent,
+        #{toCarScore,jdbcType=INTEGER} toCarScore,
+        #{createTime,jdbcType=TIMESTAMP} createTime,
+        #{remark,jdbcType=VARCHAR} remark,
+        #{toCharterContent,jdbcType=TIMESTAMP} toCharterContent,
+        #{transporterUserId,jdbcType=VARCHAR} transporterUserId
+        from dual
+        )tmp on (
+        tmp.orderCode = e.order_code
+        )
+        when matched then
+        update
+        <set>
+            <if test="userId !=null">e.user_id = #{userId},</if>
+            <if test="toDriverContent !=null and toDriverContent != ''">e.to_driver_content = #{toDriverContent},</if>
+            <if test="toDriverScore !=null">e.to_driver_score = #{toDriverScore},</if>
+            <if test="toCarContent !=null and toCarContent != ''">e.to_car_content = #{toCarContent},</if>
+            <if test="toCarScore !=null">e.to_car_score = #{toCarScore},</if>
+            <if test="remark !=null and remark != ''">e.remark = #{remark},</if>
+            <if test="toCharterContent !=null and toCharterContent != ''">e.to_charter_content = #{toCharterContent},
+            </if>
+            <if test="transporterUserId !=null">e.transporter_user_id = #{transporterUserId},</if>
+        </set>
+        when not matched then
+
+        insert(
+        id,
+        user_id,
+        order_code,
+        to_driver_content,
+        to_driver_score,
+        to_car_content,
+        to_car_score,
+        create_time,
+        remark,
+        to_charter_content,
+        transporter_user_id
+        )
+        values(
+        seq_evaluation.nextval,
+        tmp.userId,
+        tmp.orderCode,
+        tmp.toDriverContent,
+        tmp.toDriverScore,
+        tmp.toCarContent,
+        tmp.toCarScore,
+        sysdate,
+        tmp.remark,
+        tmp.toCharterContent,
+        tmp.transporterUserId
+        )
+
+    </insert>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.charter.evaluate.Evaluate"
+            resultType="com.dhxx.facade.entity.charter.evaluate.Evaluate">
+        select
+        e.id,
+        e.user_id userId,
+        e.order_code orderCode,
+        e.to_driver_content toDriverContent,
+        e.to_driver_score toDriverScore,
+        e.to_car_content toCarContent,
+        e.to_car_score toCarScore,
+        e.create_time createTime,
+        c.company_name charterName,
+        o.car_num carNum,
+        d.name driverName,
+        d.code driverCode,
+        d.job_num jobNum
+        from t_evaluation e
+        left join t_order o on o.order_code = e.order_code
+        left join t_company c on c.company_code = o.charter_code
+        left join t_driver d on d.code = o.driver_code
+        <where>
+            <if test="id !=null">
+                and e.id = #{id}
+            </if>
+            <if test="transporterCode !=null and transporterCode != ''">
+                and o.transporter_code = #{transporterCode}
+            </if>
+            <if test="orderCode !=null and orderCode != ''">
+                and o.order_code = #{orderCode}
+            </if>
+            <if test="carNum !=null and carNum != ''">
+                and o.car_num like '%'||#{carNum}||'%'
+            </if>
+            <if test="carCode !=null and carCode != ''">
+                and o.car_code = #{carCode}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                <![CDATA[
+ 			and e.create_time >= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+            </if>
+            <if test="endTime != null and endTime != ''">
+                <![CDATA[
+ 			and e.create_time <= to_date(#{endTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+            </if>
+            <if test="flag !=null and flag == 1">
+                and e.user_id is not null
+            </if>
+            <if test="flag !=null and flag == 2">
+                and e.transporter_user_id is not null
+            </if>
+            <if test="driverName !=null and driverName != ''">
+                and d.name = #{driverName}
+            </if>
+            <if test="driverCode !=null and driverCode != ''">
+                and d.code = #{driverCode}
+            </if>
+        </where>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+    </select>
+</mapper>

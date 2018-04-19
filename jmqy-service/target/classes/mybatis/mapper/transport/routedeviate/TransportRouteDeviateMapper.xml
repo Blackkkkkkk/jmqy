@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.routedeviate.TransportRouteDeviateMapper">
+
+
+    <resultMap id="map" type="com.dhxx.facade.entity.transport.routedeviate.TransportRouteDeviate">
+        <result column="id" property="id"></result>
+        <result column="deviation" property="deviation"></result>
+        <result column="handling_remark" property="handlingRemark"></result>
+        <result column="creation_date" property="creationDate"></result>
+        <result column="responsible" property="responsible"></result>
+        <result column="order_code" property="orderCode"></result>
+        <result column="company_code" property="companyCode"></result>
+    </resultMap>
+
+    <select id="find" parameterType="com.dhxx.facade.entity.transport.routedeviate.TransportRouteDeviate" resultMap="map">
+        SELECT T.* FROM T_ROUTE_DEVIATE_REMARK T
+        <where>
+            1=1
+            <if test="companyCode != null and companyCode != ''">
+                and T.company_code = #{companyCode}
+            </if>
+            <if test="orderCode != null and orderCode != ''">
+                and T.order_code = #{orderCode}
+            </if>
+            <if test="responsible != null and responsible != ''">
+                and T.responsible = #{responsible}
+            </if>
+            ORDER BY T.CREATION_DATE DESC
+        </where>
+    </select>
+
+    <insert id="add" parameterType="com.dhxx.facade.entity.transport.routedeviate.TransportRouteDeviate">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select routeDeviateRemark.nextval as id from dual
+        </selectKey>
+        INSERT INTO  T_ROUTE_DEVIATE_REMARK(
+        id,
+        deviation,
+        handling_remark,
+        creation_date,
+        responsible,
+        order_code,
+        company_code
+        )
+        VALUES (
+        #{id},
+        #{deviation},
+        #{handlingRemark},
+        #{creationDate},
+        #{responsible},
+        #{orderCode},
+        #{companyCode}
+        )
+    </insert>
+
+
+
+</mapper>

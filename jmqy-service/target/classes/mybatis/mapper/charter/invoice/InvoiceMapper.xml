@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.charter.invoice.InvoiceMapper">
+
+
+	<resultMap id="InvoiceMap" type="java.util.HashMap">
+		<id column="id" property="id"/>
+		<result column="user_id" property="userId"/>
+		<result column="order_code" property="orderCode"/>
+		<result column="invoice_type" property="invoiceType"/>
+		<result column="title_category" property="titleCategory"/>
+		<result column="invoice_amount" property="invoiceAmount"/>
+		<result column="invoice_title" property="invoiceTitle"/>
+		<result column="taxpayer_number" property="taxpayerNumber"/>
+		<result column="invoice_content" property="invoiceContent"/>
+		<result column="email" property="email"/>
+		<result column="order_status" property="orderStatus"/>
+		<result column="courier_number" property="courierNumber"/>
+		<result column="courier_company" property="courierCompany"/>
+		<result column="address" property="address"/>
+		<result column="remark" property="remark"/>
+		<result column="create_time" property="createTime"/>
+		<result column="recipient" property="recipient"/>
+		<result column="contact_way" property="contactWay"/>
+	</resultMap>
+
+
+
+	<resultMap id="InvoiceTemplateMap" type="java.util.HashMap">
+		<id column="id" property="id"/>
+		<result column="user_id" property="userId"/>
+		<result column="invoice_title" property="invoiceTitle"/>
+		<result column="invoice_content" property="invoiceContent"/>
+		<result column="email" property="email"/>
+		<result column="taxpayer_number" property="taxpayerNumber"/>
+	</resultMap>
+
+
+
+
+
+	<insert id="save" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice" useGeneratedKeys="true" keyProperty="id">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+         	 select seq_user.nextval as id from dual
+        </selectKey>
+			insert into t_invoice (
+				id,
+				user_id,
+ 				order_code,
+ 				invoice_type,
+ 				title_category,
+ 				invoice_amount,
+ 				invoice_title,
+ 				taxpayer_number,
+ 				invoice_content,
+ 				email,
+ 				address,
+ 				remark,
+  				create_time,
+		        recipient,
+		        contact_way,
+		        order_status,
+		        courier_number,
+		        courier_company
+		) values(
+				#{id}, 
+				#{userId,jdbcType=INTEGER}, 
+				#{orderCode,jdbcType=VARCHAR},
+				#{invoiceType,jdbcType=INTEGER},
+				#{titleCategory,jdbcType=INTEGER},
+				#{invoiceAmount,jdbcType=FLOAT},
+				#{invoiceTitle,jdbcType=VARCHAR},
+				#{taxpayerNumber,jdbcType=VARCHAR},
+				#{invoiceContent,jdbcType=VARCHAR},
+				#{email,jdbcType=VARCHAR},
+				#{address,jdbcType=VARCHAR},
+				#{remark,jdbcType=VARCHAR},
+				#{createTime,jdbcType=TIMESTAMP},
+		        #{recipient,jdbcType=VARCHAR},
+		        #{contactWay,jdbcType=VARCHAR},
+		        #{orderStatus,jdbcType=VARCHAR},
+		        #{courierNumber,jdbcType=VARCHAR},
+		        #{courierCompany,jdbcType=VARCHAR}
+			)
+	</insert>
+	<select id="find" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice" resultMap="InvoiceMap">
+		select * from t_invoice where order_code = #{orderCode,jdbcType=VARCHAR} and rownum&lt;2
+	</select>
+
+
+
+	<update id="update" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice"  >
+		update t_invoice t
+		<set>
+		<if test="orderStatus != null and orderStatus != ''">
+			t.order_status = #{orderStatus},
+		</if>
+		<if test="courierNumber != null and courierNumber != ''">
+			t.courier_number = #{courierNumber},
+		</if>
+		<if test="courierCompany != null and courierCompany != ''">
+			t.courier_company = #{courierCompany},
+		</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and t.id = #{id}
+			</if>
+			<if test="orderCode != null and orderCode != ''">
+				and t.order_code = #{orderCode}
+			</if>
+		</where>
+
+	</update>
+
+
+	<select id="selectInvoiceTem" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice" resultMap="InvoiceTemplateMap">
+		select * from t_invoice_template t
+		<where>
+			<if test="id != null">
+				and t.id = #{id}
+			</if>
+			<if test="userId != null">
+				and t.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+
+
+
+
+	<insert id="saveInvoiceTem" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice" useGeneratedKeys="true" keyProperty="id">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+			select seq_user.nextval as id from dual
+		</selectKey>
+		insert into t_invoice_template (
+		id,
+		user_id,
+		invoice_title,
+		taxpayer_number,
+		invoice_content,
+		email
+		) values(
+		#{id},
+		#{userId,jdbcType=INTEGER},
+		#{invoiceTitle,jdbcType=VARCHAR},
+		#{taxpayerNumber,jdbcType=VARCHAR},
+		#{invoiceContent,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<delete id="delInvoiceTem" parameterType="com.dhxx.facade.entity.charter.invoice.Invoice">
+           delete  t_invoice_template t
+           <where>
+			   <if test="id != null">
+				   and t.id = #{id}
+			   </if>
+			   <if test="userId != null">
+				   and t.user_id = #{userId}
+			   </if>
+		   </where>
+	</delete>
+</mapper>

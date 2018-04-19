@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.car.CarMapper">
+
+    <select id="list" parameterType="com.dhxx.facade.entity.transport.car.Car"
+            resultType="com.dhxx.facade.entity.transport.car.Car">
+        select
+        c.id,
+        c.car_code carCode,
+        c.vin,
+        c.car_num carNum,
+        c.car_type carType,
+        c.seat_number seatNumber,
+        c.driving_license_pros drivingLicensePros,
+        c.driving_license_cons drivingLicenseCons,
+        c.driving_license_effect drivingLicenseEffect,
+        c.driving_license_invalid drivingLicenseInvalid,
+        c.company_code companyCode,
+        c.charter_type charterType,
+        c.additional,
+        c.made_date madeDate,
+        c.status,
+        c.remark,
+        c.car_photo carPhoto,
+        c.car_photo1 carPhoto1,
+        c.car_photo2 carPhoto2,
+        c.car_photo3 carPhoto3,
+        c.car_photo4 carPhoto4,
+        c.car_photo5 carPhoto5,
+        c.operation_license operationLicense,
+        c.operation_license_effect operationLicenseEffect,
+        c.operation_license_invalid operationLicenseInvalid,
+        c.xianlupai,
+        c.xianlupai_pros xianlupaiPros,
+        c.xianlupai_cons xianlupaiCons,
+        c.policy,
+        c.policy_effect policyEffect,
+        c.policy_invalid policyInvalid,
+        c.driver_code driverCode,
+        c.site,
+        c.lng,
+        c.lat,
+        c.area,
+        c.city,
+        d.name driverName
+        from t_car c
+        left join t_driver d on d.code = c.driver_code
+        <where>
+            c.record_status = 0
+            <if test="id !=null">
+                and c.id = #{id}
+            </if>
+            <if test="vin !=null and vin != ''">
+                and c.vin = #{vin}
+            </if>
+            <if test="carNum !=null and carNum != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and c.car_num = #{carNum}
+                    </when>
+                    <otherwise>
+                        and c.car_num like '%'||#{carNum}||'%'
+                    </otherwise>
+                </choose>
+
+            </if>
+            <if test="carCode !=null and carCode != ''">
+                and c.car_code = #{carCode}
+            </if>
+            <if test="carType !=null and carType != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and c.car_type = #{carType}
+                    </when>
+                    <otherwise>
+                        and c.car_type like '%'||#{carType}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="driverName !=null and driverName != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and d.name = #{driverName}
+                    </when>
+                    <otherwise>
+                        and d.name like '%'||#{driverName}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status !=null">
+                and c.status = #{status}
+            </if>
+            <if test="createUser !=null and createUser != ''">
+                and c.create_user = #{createUser}
+            </if>
+            <if test="seatNumber !=null and seatNumber != ''">
+                and c.seat_number = #{seatNumber}
+            </if>
+            <if test="companyCode !=null and companyCode != ''">
+                and c.company_code = #{companyCode}
+            </if>
+
+
+            <if test="beginTime != null and beginTime != ''">
+                <![CDATA[
+ 			and c.made_date >= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+            </if>
+            <if test="endTime != null and endTime != ''">
+                <![CDATA[
+ 			and c.made_date <= to_date(#{endTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+            </if>
+        </where>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+    </select>
+
+    <update id="updateById" parameterType="com.dhxx.facade.entity.transport.car.Car">
+        update t_car c
+        <set>
+            <if test="status != null">
+                c.status = #{status}
+            </if>
+        </set>
+        where 1=1
+        <if test="id!=null">
+          and  c.id = #{id}
+        </if>
+        <if test="companyCode!=null and companyCode !=''">
+          and  c.company_code = #{companyCode}
+        </if>
+    </update>
+
+
+    <insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.transport.car.Car">
+        merge into t_car c using
+        (
+        select
+        #{id, jdbcType=BIGINT} id,
+        #{carCode, jdbcType = VARCHAR} carCode,
+        #{vin, jdbcType = VARCHAR} vin,
+        #{carNum, jdbcType = VARCHAR} carNum,
+        #{carType, jdbcType = VARCHAR} carType,
+        #{seatNumber, jdbcType = VARCHAR} seatNumber,
+        #{drivingLicensePros, jdbcType = VARCHAR} drivingLicensePros,
+        #{drivingLicenseCons, jdbcType = VARCHAR} drivingLicenseCons,
+        #{drivingLicenseEffect, jdbcType = VARCHAR} drivingLicenseEffect,
+        #{drivingLicenseInvalid, jdbcType = VARCHAR} drivingLicenseInvalid,
+        #{companyCode, jdbcType = VARCHAR} companyCode,
+        #{charterType, jdbcType = VARCHAR} charterType,
+        #{additional, jdbcType = VARCHAR} additional,
+        #{madeDate, jdbcType = VARCHAR} madeDate,
+        #{remark, jdbcType = VARCHAR} remark,
+        #{createUser, jdbcType = VARCHAR} createUser,
+        #{createCompany, jdbcType = VARCHAR} createCompany,
+        #{updateUser, jdbcType = VARCHAR} updateUser,
+        #{carPhoto, jdbcType = VARCHAR} carPhoto,
+        #{carPhoto1, jdbcType = VARCHAR} carPhoto1,
+        #{carPhoto2, jdbcType = VARCHAR} carPhoto2,
+        #{carPhoto3, jdbcType = VARCHAR} carPhoto3,
+        #{carPhoto4, jdbcType = VARCHAR} carPhoto4,
+        #{carPhoto5, jdbcType = VARCHAR} carPhoto5,
+        #{operationLicense, jdbcType = VARCHAR} operationLicense,
+        #{operationLicenseEffect, jdbcType = VARCHAR} operationLicenseEffect,
+        #{operationLicenseInvalid, jdbcType = VARCHAR} operationLicenseInvalid,
+        #{xianlupai, jdbcType = VARCHAR} xianlupai,
+        #{xianlupaiPros, jdbcType = VARCHAR} xianlupaiPros,
+        #{xianlupaiCons, jdbcType = VARCHAR} xianlupaiCons,
+        #{policy, jdbcType = VARCHAR} policy,
+        #{policyEffect, jdbcType = VARCHAR} policyEffect,
+        #{policyInvalid, jdbcType = VARCHAR} policyInvalid,
+        #{driverCode, jdbcType = VARCHAR} driverCode,
+        #{site, jdbcType = VARCHAR} site,
+        #{lng, jdbcType = VARCHAR} lng,
+        #{lat, jdbcType = VARCHAR} lat,
+        #{area, jdbcType = VARCHAR} area,
+        #{city, jdbcType = VARCHAR} city
+        from dual
+        )tmp on (
+        tmp.id = c.id
+        )
+        when matched then
+        update set
+        <!-- c.car_num = tmp.carNum, -->
+        c.car_type = tmp.carType,
+        c.seat_number = tmp.seatNumber,
+        c.car_num = tmp.carNum,
+        c.driving_license_pros = tmp.drivingLicensePros,
+        c.driving_license_cons = tmp.drivingLicenseCons,
+        c.driving_license_effect = tmp.drivingLicenseEffect,
+        c.driving_license_invalid = tmp.drivingLicenseInvalid,
+        c.charter_type = tmp.charterType,
+        c.additional = tmp.additional,
+        c.made_date = tmp.madeDate,
+        c.remark = tmp.remark,
+        c.update_user = tmp.updateUser,
+        c.update_date = sysdate,
+        c.car_photo = tmp.carPhoto,
+        c.car_photo1 = tmp.carPhoto1,
+        c.car_photo2 = tmp.carPhoto2,
+        c.car_photo3 = tmp.carPhoto3,
+        c.car_photo4 = tmp.carPhoto4,
+        c.car_photo5 = tmp.carPhoto5,
+        c.operation_license = tmp.operationLicense,
+        c.operation_license_effect = tmp.operationLicenseEffect,
+        c.operation_license_invalid = tmp.operationLicenseInvalid,
+        c.xianlupai = tmp.xianlupai,
+        c.xianlupai_pros = tmp.xianlupaiPros,
+        c.xianlupai_cons = tmp.xianlupaiCons,
+        c.policy = tmp.policy,
+        c.policy_effect = tmp.policyEffect,
+        c.policy_invalid = tmp.policyInvalid,
+        c.driver_code = tmp.driverCode,
+        c.site = tmp.site,
+        c.lng = tmp.lng,
+        c.lat = tmp.lat,
+        c.area = tmp.area,
+        c.city = tmp.city
+        when not matched then
+
+        insert(
+        c.id,
+        c.car_code,
+        c.vin,
+        c.car_num,
+        c.car_type,
+        c.seat_number,
+        c.driving_license_pros,
+        c.driving_license_cons,
+        c.driving_license_effect,
+        c.driving_license_invalid,
+        c.company_code,
+        c.charter_type,
+        c.additional,
+        c.made_date,
+        c.status,
+        c.remark,
+        c.record_status,
+        c.create_user,
+        c.create_company,
+        c.create_date,
+        c.update_date,
+        c.car_photo,
+        c.car_photo1,
+        c.car_photo2,
+        c.car_photo3,
+        c.car_photo4,
+        c.car_photo5,
+        c.operation_license,
+        c.operation_license_effect,
+        c.operation_license_invalid,
+        c.xianlupai,
+        c.xianlupai_pros,
+        c.xianlupai_cons,
+        c.policy,
+        c.policy_effect,
+        c.policy_invalid,
+        c.driver_code,
+        c.site,
+        c.lng,
+        c.lat,
+        c.area,
+        c.city
+        )
+        values(
+        SEQ_CAR.nextval,
+        concat(tmp.carCode, lpad(SEQ_CAR.nextval, 6, '0')),
+        tmp.vin,
+        tmp.carNum,
+        tmp.carType,
+        tmp.seatNumber,
+        tmp.drivingLicensePros,
+        tmp.drivingLicenseCons,
+        tmp.drivingLicenseEffect,
+        tmp.drivingLicenseInvalid,
+        tmp.companyCode,
+        tmp.charterType,
+        tmp.additional,
+        tmp.madeDate,
+        0,
+        tmp.remark,
+        0,
+        tmp.createUser,
+        tmp.createCompany,
+        sysdate,
+        sysdate,
+        tmp.carPhoto,
+        tmp.carPhoto1,
+        tmp.carPhoto2,
+        tmp.carPhoto3,
+        tmp.carPhoto4,
+        tmp.carPhoto5,
+        tmp.operationLicense,
+        tmp.operationLicenseEffect,
+        tmp.operationLicenseInvalid,
+        tmp.xianlupai,
+        tmp.xianlupaiPros,
+        tmp.xianlupaiCons,
+        tmp.policy,
+        tmp.policyEffect,
+        tmp.policyInvalid,
+        tmp.driverCode,
+        tmp.site,
+        tmp.lng,
+        tmp.lat,
+        tmp.area,
+        tmp.city
+        )
+
+    </insert>
+
+    <select id="findcartype" resultType="String">
+        SELECT car_type FROM t_car WHERE car_code=#{carcode}
+	</select>
+
+    <select id="carList" parameterType="com.dhxx.facade.entity.transport.car.Car" resultType="com.dhxx.facade.entity.transport.car.Car">
+        SELECT DISTINCT(t.car_type) carType FROM t_car t  ORDER BY cast(REGEXP_SUBSTR(t.car_type, '[0-9]+') as int)
+    </select>
+
+</mapper>

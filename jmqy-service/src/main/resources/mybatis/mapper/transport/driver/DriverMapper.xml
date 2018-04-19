@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.driver.DriverMapper">
+
+    <select id="list" parameterType="com.dhxx.facade.entity.transport.driver.Driver"
+            resultType="com.dhxx.facade.entity.transport.driver.Driver">
+        select
+        d.id,
+        d.code code,
+        d.job_num jobNum,
+        d.headshot headshot,
+        d.name name,
+        d.sex sex,
+        d.birth_date birthDate,
+        d.phone phone,
+        d.id_card idCard,
+        d.id_card_pros idCardPros,
+        d.id_card_cons idCardCons,
+        d.driving_license drivingLicense,
+        d.driving_license_effect drivingLicenseEffect,
+        d.driving_license_invalid drivingLicenseInvalid,
+        d.work_license workLicense,
+        d.work_license_effect workLicenseEffect,
+        d.work_license_invalid workLicenseInvalid,
+        d.company_code companyCode,
+        d.status,
+        d.remark,
+        c.company_name companyName
+        from t_driver d ,t_company C
+        <where>
+            d.record_status = 0
+            and D.COMPANY_CODE = C.COMPANY_CODE
+            <if test="id !=null">
+                and d.id = #{id}
+            </if>
+            <if test="code !=null and code != ''">
+                and d.code = #{code}
+            </if>
+            <if test="jobNum !=null and jobNum != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and d.job_num = #{jobNum}
+                    </when>
+                    <otherwise>
+                        and d.job_num like '%'||#{jobNum}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="idCard !=null and idCard != ''">
+                and d.id_card = #{idCard}
+            </if>
+            <if test="name !=null and name != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and d.name = #{name}
+                    </when>
+                    <otherwise>
+                        and d.name like '%'||#{name}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="phone !=null and phone != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and d.phone = #{phone}
+                    </when>
+                    <otherwise>
+                        and d.phone like '%'||#{phone}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="status !=null and status !=''">
+                and d.status = #{status}
+            </if>
+            <if test="createUser !=null and createUser != ''">
+                and d.create_user = #{createUser}
+            </if>
+            <if test="companyCode !=null and companyCode != ''">
+                and d.company_code = #{companyCode}
+            </if>
+            <if test="companyName !=null and companyName != ''">
+                <choose>
+                    <when test="searchType == '0'">
+                        and d.company_name = #{companyName}
+                    </when>
+                    <otherwise>
+                        and d.company_name like '%'||#{companyName}||'%'
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+    </select>
+
+    <update id="updateById" parameterType="com.dhxx.facade.entity.transport.driver.Driver">
+        update t_driver d
+        <set>
+            <if test="status != null">
+                d.status = #{status}
+            </if>
+            <if test="recordStatus != null">
+                d.record_status = #{recordStatus}
+            </if>
+        </set>
+        where 1=1
+        <if test="id!=null">
+           and d.id = #{id}
+        </if>
+        <if test="companyCode!=null and companyCode !=''">
+           and d.company_code = #{companyCode}
+        </if>
+    </update>
+
+
+    <insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.transport.driver.Driver">
+        merge into t_driver d using
+        (
+        select
+        #{id, jdbcType = VARCHAR} id,
+        #{code, jdbcType = VARCHAR} code,
+        #{jobNum, jdbcType = VARCHAR} jobNum,
+        #{headshot, jdbcType = VARCHAR} headshot,
+        #{name, jdbcType = VARCHAR} name,
+        #{sex, jdbcType = VARCHAR} sex,
+        #{birthDate, jdbcType = VARCHAR} birthDate,
+        #{phone, jdbcType = VARCHAR} phone,
+        #{idCard, jdbcType = VARCHAR} idCard,
+        #{idCardPros, jdbcType = VARCHAR} idCardPros,
+        #{idCardCons, jdbcType = VARCHAR} idCardCons,
+        #{drivingLicense, jdbcType = VARCHAR} drivingLicense,
+        #{drivingLicenseEffect, jdbcType = VARCHAR} drivingLicenseEffect,
+        #{drivingLicenseInvalid, jdbcType = VARCHAR} drivingLicenseInvalid,
+        #{workLicense, jdbcType = VARCHAR} workLicense,
+        #{workLicenseEffect, jdbcType = VARCHAR} workLicenseEffect,
+        #{workLicenseInvalid, jdbcType = VARCHAR} workLicenseInvalid,
+        #{companyCode, jdbcType = VARCHAR} companyCode,
+        #{status, jdbcType = VARCHAR} status,
+        #{remark, jdbcType = VARCHAR} remark,
+        #{createUser, jdbcType = VARCHAR} createUser,
+        #{createCompany, jdbcType = VARCHAR} createCompany,
+        #{updateUser, jdbcType = VARCHAR} updateUser
+        from dual
+        )tmp on (
+        tmp.id = d.id
+        )
+        when matched then
+        update set
+
+        d.job_num = tmp.jobNum,
+        d.headshot = tmp.headshot,
+        d.name = tmp.name,
+        d.sex = tmp.sex,
+        d.birth_date = tmp.birthDate,
+        d.phone = tmp.phone,
+        d.id_card = tmp.idCard,
+        d.id_card_pros = tmp.idCardPros,
+        d.id_card_cons = tmp.idCardCons,
+        d.driving_license = tmp.drivingLicense,
+        d.driving_license_effect = tmp.drivingLicenseEffect,
+        d.driving_license_invalid = tmp.drivingLicenseInvalid,
+        d.work_license = tmp.workLicense,
+        d.work_license_effect = tmp.workLicenseEffect,
+        d.work_license_invalid = tmp.workLicenseInvalid,
+        d.status = tmp.status,
+        d.remark = tmp.remark,
+        d.update_user = tmp.updateUser,
+        d.update_date = sysdate
+        when not matched then
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="reId">
+            select SEQ_DRIVER.nextval as reId from dual
+        </selectKey>
+        insert(
+        d.id,
+        d.code,
+        d.job_num,
+        d.headshot,
+        d.name,
+        d.sex,
+        d.birth_date,
+        d.phone,
+        d.id_card,
+        d.id_card_pros,
+        d.id_card_cons,
+        d.driving_license,
+        d.driving_license_effect,
+        d.driving_license_invalid,
+        d.work_license,
+        d.work_license_effect,
+        d.work_license_invalid,
+        d.company_code,
+        d.status,
+        d.remark,
+        d.record_status,
+        d.create_user,
+        d.create_company,
+        d.create_date,
+        d.update_date
+        )
+        values(
+        #{reId},
+        concat(tmp.code, lpad(#{reId}, 6, '0')),
+        tmp.jobNum,
+        tmp.headshot,
+        tmp.name,
+        tmp.sex,
+        tmp.birthDate,
+        tmp.phone,
+        tmp.idCard,
+        tmp.idCardPros,
+        tmp.idCardCons,
+        tmp.drivingLicense,
+        tmp.drivingLicenseEffect,
+        tmp.drivingLicenseInvalid,
+        tmp.workLicense,
+        tmp.workLicenseEffect,
+        tmp.workLicenseInvalid,
+        tmp.companyCode,
+        0,
+        tmp.remark,
+        0,
+        tmp.createUser,
+        tmp.createCompany,
+        sysdate,
+        sysdate
+        )
+
+    </insert>
+
+</mapper>

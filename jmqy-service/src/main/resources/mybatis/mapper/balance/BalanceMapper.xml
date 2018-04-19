@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.balance.BalanceMapper">
+
+	<insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.charter.evaluate.Evaluate">
+		merge into t_balance b using
+		(
+			select
+			#{userId,jdbcType=VARCHAR} userId, 
+			#{companyCode,jdbcType=VARCHAR} companyCode, 
+			#{amount,jdbcType=VARCHAR} amount, 
+			#{consumption,jdbcType=VARCHAR} consumption,
+			#{balance,jdbcType=VARCHAR} balance
+			from dual
+		)tmp on (
+			tmp.userId = b.user_id
+		)
+		when matched then
+		
+		update
+		<set>
+		<if test="amount !=null">b.to_driver_score = #{amount},</if>
+		<if test="consumption !=null">b.consumption = #{consumption},</if>
+		<if test="balance !=null">b.balance = #{balance},</if>
+		</set>
+		when not matched then
+		
+		insert(
+			user_id,
+			company_code,
+	        amount,
+	        consumption,
+	        balance
+		    )
+		values(
+			#{userId,jdbcType=VARCHAR}, 
+			#{companyCode,jdbcType=VARCHAR}, 
+			#{amount,jdbcType=VARCHAR}, 
+			#{consumption,jdbcType=VARCHAR},
+			#{balance,jdbcType=VARCHAR}
+		)
+	</insert>
+
+    <select id="find" parameterType="com.dhxx.facade.entity.balance.Balance" resultType="com.dhxx.facade.entity.balance.Balance">
+        select 
+        b.user_id userId,
+        p.company_name companyName,
+        u.user_account userAccount,
+        b.amount amount,
+        b.consumption consumption,
+        b.balance balance
+        from t_balance b
+        left join t_user u on u.id = b.user_id
+        left join t_company p on p.company_code = u.company_code
+        <where>
+        	<if test="userId != null">
+        		and b.user_id = #{userId}
+        	</if>
+        	<if test="companyCode != null and companyCode != ''">
+        		and b.company_code = #{companyCode}
+        	</if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.balance.Balance">
+        update t_balance b
+        <set>
+            <if test="amount != null">
+           		b.amount = #{amount},
+            </if>
+            <if test="consumption != null">
+            	b.consumption = #{consumption},
+            </if>
+            <if test="stockCredit != null">
+            	b.balance = #{balance},
+            </if>
+        </set>
+        <where>
+        	<if test="userId != null">
+        		and b.user_id = #{userId}
+        	</if>
+        	<if test="companyCode != null and companyCode != ''">
+        		and b.company_code = #{companyCode}
+        	</if>
+        </where>
+    </update>
+	
+</mapper>

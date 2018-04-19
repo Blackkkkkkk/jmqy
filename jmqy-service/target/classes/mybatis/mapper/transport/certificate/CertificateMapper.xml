@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.certificate.CertificateMapper">
+
+
+	<select id="list" parameterType="com.dhxx.facade.entity.transport.certificate.Certificate" resultType="com.dhxx.facade.entity.transport.certificate.Certificate">
+		SELECT * from(
+					
+			select
+			d.id id,
+			d.code code,
+	    	d.name name,
+	    	d.driving_license_effect effect,
+    		d.driving_license_invalid invalid,
+			ceil(d.driving_license_invalid - sysdate) expireDays,
+			2 type,
+			1 subjectType
+    		from t_driver d
+			where d.RECORD_STATUS = 0 
+			and d.company_code = #{transporterCode}
+			and d.driving_license_invalid is not null
+			and ceil(d.driving_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			d.id id,
+			d.code code,
+		    d.name name,
+		    d.work_license_effect effect,
+	    	d.work_license_invalid invalid,
+			ceil(d.work_license_invalid - sysdate) expireDays,
+			1 type,
+			1 subjectType
+    		from t_driver d
+			where d.RECORD_STATUS = 0 
+			and d.company_code = #{transporterCode}
+			and d.work_license_invalid is not null
+			and ceil(d.work_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.driving_license_effect effect,
+	    	c.driving_license_invalid invalid,
+			ceil(c.driving_license_invalid - sysdate) expireDays,
+			3 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.driving_license_invalid is not null
+			and ceil(c.driving_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.operation_license_effect effect,
+	    	c.operation_license_invalid invalid,
+			ceil(c.operation_license_invalid - sysdate) expireDays,
+			4 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.operation_license_invalid is not null
+			and ceil(c.operation_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.policy_effect effect,
+	    	c.policy_invalid invalid,
+			ceil(c.policy_invalid - sysdate) expireDays,
+			5 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode} 
+			and c.policy_invalid is not null
+			and ceil(c.policy_invalid - sysdate) &lt; 30
+		) ce
+		<where>
+			<if test="type !=null">
+				and ce.type = #{type} 
+			</if>
+		</where>
+		<if test="order != null and order != ''">
+	        <if test="sortType != null and sortType != ''">
+	 			order by ${sortType} ${order}
+	 		</if>
+ 		</if>
+ 		<if test="order == null or order == ''">
+	        <if test="sortType != null and sortType != ''">
+	 			ORDER BY ce.expireDays asc
+	 		</if>
+ 		</if>
+	</select>
+	
+	<select id="statisticsDue" parameterType="com.dhxx.facade.entity.transport.certificate.Certificate" resultType="java.lang.Integer">
+		SELECT sum(quantity) from(
+			
+			SELECT		
+			count(*) quantity
+    		from t_driver d
+			where d.RECORD_STATUS = 0 
+			and d.company_code = #{transporterCode}
+			and d.driving_license_invalid is not null
+			and ceil(d.driving_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			count(*) quantity
+    		from t_driver d
+			where d.RECORD_STATUS = 0 
+			and d.company_code = #{transporterCode}
+			and d.work_license_invalid is not null
+			and ceil(d.work_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			count(*) quantity
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.driving_license_invalid is not null
+			and ceil(c.driving_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			select
+			count(*) quantity
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.operation_license_invalid is not null
+			and ceil(c.operation_license_invalid - sysdate) &lt; 30
+			
+			UNION ALL
+			
+			select
+			count(*) quantity
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode} 
+			and c.policy_invalid is not null
+			and ceil(c.policy_invalid - sysdate) &lt; 30
+		) ce
+	</select>
+
+	<select id="drivingLicenseOverDue" parameterType="com.dhxx.facade.entity.transport.certificate.Certificate" resultType="com.dhxx.facade.entity.transport.certificate.Certificate">
+      select * from (
+         select
+			d.id id,
+			d.code code,
+	    	d.name name,
+	    	d.driving_license_effect effect,
+    		d.driving_license_invalid invalid,
+			ceil(d.driving_license_invalid - sysdate) expireDays,
+			2 type,
+			1 subjectType
+    		from t_driver d
+			where d.RECORD_STATUS = 0
+			and d.company_code = #{transporterCode}
+			and d.driving_license_invalid is not null
+			and ceil(d.driving_license_invalid - sysdate) &lt; 0
+
+			UNION ALL
+
+			select
+			d.id id,
+			d.code code,
+		    d.name name,
+		    d.work_license_effect effect,
+	    	d.work_license_invalid invalid,
+			ceil(d.work_license_invalid - sysdate) expireDays,
+			1 type,
+			1 subjectType
+    		from t_driver d
+			where d.RECORD_STATUS = 0
+			and d.company_code = #{transporterCode}
+			and d.work_license_invalid is not null
+			and ceil(d.work_license_invalid - sysdate) &lt; 0
+              ) ce
+	</select>
+
+
+	<select id="carLicenseOverDue" parameterType="com.dhxx.facade.entity.transport.certificate.Certificate" resultType="com.dhxx.facade.entity.transport.certificate.Certificate">
+        select * from (
+
+           select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.driving_license_effect effect,
+	    	c.driving_license_invalid invalid,
+			ceil(c.driving_license_invalid - sysdate) expireDays,
+			3 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.driving_license_invalid is not null
+			and ceil(c.driving_license_invalid - sysdate) &lt; 0
+
+			UNION ALL
+			select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.operation_license_effect effect,
+	    	c.operation_license_invalid invalid,
+			ceil(c.operation_license_invalid - sysdate) expireDays,
+			4 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.operation_license_invalid is not null
+			and ceil(c.operation_license_invalid - sysdate) &lt; 0
+
+			UNION ALL
+
+			select
+			c.id id,
+			c.CAR_CODE code,
+		    c.CAR_NUM name,
+		    c.policy_effect effect,
+	    	c.policy_invalid invalid,
+			ceil(c.policy_invalid - sysdate) expireDays,
+			5 type,
+			2 subjectType
+    		from t_car c
+			where c.RECORD_STATUS = 0
+			and c.company_code = #{transporterCode}
+			and c.policy_invalid is not null
+			and ceil(c.policy_invalid - sysdate) &lt; 0
+        )
+	</select>
+
+
+
+</mapper>

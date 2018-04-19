@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.money.MoneyMapper">
+
+    <resultMap id="Map" type="com.dhxx.facade.entity.bill.Bill">
+        <result column="id" property="id"></result>
+        <result column="order_code" property="orderCode"></result>
+        <result column="money" property="money"></result>
+        <result column="user_account" property="userAccount"></result>
+
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.money.Money">
+        insert into t_money
+        (
+            user_id,
+            total_money,
+            consume_money,
+            stock_money
+        )
+        values(
+            #{userId},
+            #{totalMoney, jdbcType=VARCHAR},
+            #{consumeMoney, jdbcType=VARCHAR},
+            #{stockMoney, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.money.Money"
+            resultType="com.dhxx.facade.entity.money.Money">
+        select u.id userId,
+        p.company_name companyName,
+        u.user_account userAccount,
+        u.company_code companyCode,
+        decode(c.total_money,null,0,c.total_money) totalMoney,
+        decode(c.consume_money,null,0,c.consume_money)consumeMoney,
+        decode(c.stock_money,null,0,c.stock_money) stockMoney,
+        p.type companyType
+        from t_user u
+        left join t_money c on u.id = c.user_id
+        left join t_company p on p.company_code = u.company_code
+        where p.type = 2 and u.type = 1 and p.status = 0
+        <if test="param != null and param != ''">
+            and (p.company_name like '%'||#{param}||'%' or u.user_account like '%'||#{param}||'%')
+        </if>
+        <if test="companyType != null">
+            and p.type = #{companyType}
+        </if>
+    </select>
+
+    <select id="findOne" parameterType="com.dhxx.facade.entity.money.Money"
+            resultType="com.dhxx.facade.entity.money.Money">
+        select c.user_id userId,
+        p.company_name companyName,
+        u.user_account userAccount,
+        decode(c.total_money,null,0,c.total_money) totalMoney,
+        decode(c.consume_money,null,0,c.consume_money)consumeMoney,
+        decode(c.stock_money,null,0,c.stock_money) stockMoney
+        from t_money c
+        left join t_user u on u.id = c.user_id
+        left join t_company p on p.company_code = u.company_code
+        where
+        1=1
+        <if test="userId != null and userId != ''">
+            and c.user_id = #{userId}
+        </if>
+        <if test="companyCode != null and companyCode != ''">
+            and u.company_code = #{companyCode}
+        </if>
+
+    </select>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.money.Money">
+        update t_money c
+        <set>
+            <if test="totalMoney != null">c.total_money = #{totalMoney},</if>
+            <if test="consumeMoney != null">c.consume_money = #{consumeMoney},</if>
+            <if test="stockMoney != null">c.stock_money = #{stockMoney},</if>
+        </set>
+        where 1 = 1 and c.user_id = #{userId}
+    </update>
+
+
+    <select id="companyCreditList" parameterType="com.dhxx.facade.entity.money.Money"
+            resultMap="Map">
+
+        SELECT t.*,s.user_account FROM t_bill t,t_user s
+        where
+        t.user_id = s.id
+        and t.trade_mode = 0
+        <if test=" userId !=null and userId !=''">
+            and t.user_id = #{userId}
+        </if>
+        AND
+        t.user_id in
+        (SELECT u.id from t_user u where u.company_code=#{companyCode})
+    </select>
+
+</mapper>

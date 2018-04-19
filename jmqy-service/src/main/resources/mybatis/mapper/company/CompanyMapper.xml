@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.company.CompanyMapper">
+
+     <insert id="save" parameterType="com.dhxx.facade.entity.company.Company">
+        <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Long">
+            select seq_company.nextval as id from dual
+        </selectKey>
+        insert into t_company(
+            id,
+            company_code,
+            company_name,
+            company_address,
+            business_pic,
+            status,
+            type,
+            job_num_pre,
+            register_date)
+        values(
+            #{id},
+            concat(#{companyCode,jdbcType=VARCHAR},lpad(#{id}, 10, '0')),
+            #{companyName,jdbcType=VARCHAR},
+            #{companyAddress,jdbcType=VARCHAR},
+            #{businessPic,jdbcType=VARCHAR},
+            #{status,jdbcType=VARCHAR},
+            #{type,jdbcType=VARCHAR},
+            #{jobNumPre,jdbcType=VARCHAR},
+            #{registerDate,jdbcType=VARCHAR})
+     </insert>
+
+     <select id="findOne" parameterType="com.dhxx.facade.entity.company.Company" resultType="com.dhxx.facade.entity.company.Company">
+        select 
+        	c.company_code companyCode,
+        	c.business_pic businessPic,
+        	c.status status,
+        	c.type type,
+        	c.job_num_pre jobNumPre
+        from t_company c
+        left join t_user u on u.company_code = c.company_code 
+        where u.id = #{userId} and c.status=0 and u.type=1
+     </select>
+    
+     <select id="find" parameterType="com.dhxx.facade.entity.company.Company" resultType="com.dhxx.facade.entity.company.Company">
+        select
+            c.id,
+            c.company_code companyCode,
+            c.company_name companyName,
+            c.company_address companyAddress,
+            c.business_pic businessPic,
+            c.status status,
+            c.type type,
+            c.job_num_pre jobNumPre,
+            c.register_date registerDate
+        from t_company c
+        <where>
+        <if test="id !=null">
+			and c.id = #{id} 
+		</if>
+		<if test="companyCode !=null and companyCode != ''">
+			and c.company_code = #{companyCode}
+		</if>
+            <if test='actionType =="1"'>
+                and c.COMPANY_CODE not in ( SELECT R.COMPANY_CODE FROM T_PRICE_RULE R where R.RULE_TYPE='11')
+            </if>
+        </where>
+    </select>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.company.Company" resultType="com.dhxx.facade.entity.company.Company">
+        select
+            c.id,
+            c.company_code companyCode,
+            c.company_name companyName,
+            c.company_address companyAddress,
+            c.business_pic businessPic,
+            c.status status,
+            c.type type,
+            c.job_num_pre jobNumPre,
+            c.register_date registerDate,
+            u.user_account userAccount
+        from t_company c
+        left join t_user u on (u.company_code = c.company_code and u.type = 1)
+        where c.type = 3
+        <if test="param != null and param != ''">
+            and (c.company_name like '%'||#{param}||'%' or c.company_address like '%'||#{param}||'%' or u.user_account like '%'||#{param}||'%')
+        </if>
+
+        ORDER BY
+        c.company_name,
+        c.register_date desc
+    </select>
+
+    <select id="selectOne" parameterType="com.dhxx.facade.entity.company.Company" resultType="com.dhxx.facade.entity.company.Company">
+        select
+            c.id,
+            c.company_code companyCode,
+            c.company_name companyName,
+            c.company_address companyAddress,
+            c.business_pic businessPic,
+            c.status status,
+            c.type type,
+            c.job_num_pre jobNumPre,
+            c.register_date registerDate
+        from t_company c
+        where c.type = 3 and c.job_num_pre = #{jobNumPre} and c.id != #{id}
+    </select>
+
+    <update id="set" parameterType="com.dhxx.facade.entity.company.Company">
+        update t_company c
+        <set>
+            <if test="jobNumPre != null">
+                c.job_num_pre = #{jobNumPre},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and c.id = #{id}
+            </if>
+        </where>
+    </update>
+    
+    <update id="update" parameterType="com.dhxx.facade.entity.company.Company">
+		update t_company c
+		<set>
+			<if test="companyName != null and companyName != ''">	
+  				c.company_name = #{companyName},
+  			</if>
+  			<if test="companyAddress != null and companyAddress != ''">	
+  				c.company_address = #{companyAddress},
+  			</if>
+  			<if test="businessPic != null and businessPic != ''">	
+  				c.business_pic = #{businessPic},
+  			</if>
+  			<if test="jobNumPre != null and jobNumPre != ''">	
+  				c.job_num_pre = #{jobNumPre},
+  			</if>
+  			<if test="status != null">	
+  				c.status = #{status},
+  			</if>
+  			<if test="type != null">	
+  				c.type = #{type},
+  			</if>	
+		</set> 
+        <where>
+	        <if test="id != null">
+	 			and c.id = #{id} 
+	 		</if>
+	 		<if test="companyCode != null and companyCode != ''">
+	 			and c.company_code = #{companyCode}
+	 		</if>
+        </where>
+	</update>
+    
+</mapper>

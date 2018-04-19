@@ -1,0 +1,11 @@
+body{
+	min-width:1200px;
+}
+div[contype="string"]{
+	border: 1px solid #e7f4f1;
+	border-radius: 4px;
+}
+/**分页**/
+.layui-laypage-em{
+    background-color: #1E9FFF !important;
+}

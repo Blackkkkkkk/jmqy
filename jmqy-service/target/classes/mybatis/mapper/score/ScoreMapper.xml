@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.score.ScoreMapper">
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.score.Score">
+        insert into t_score (user_id, order_id, total_score, consume_score, expire_date)
+        values (#{userId,jdbcType=VARCHAR}, #{orderId,jdbcType=VARCHAR}, #{totalScore,jdbcType=VARCHAR}, #{consumeScore,jdbcType=VARCHAR}, #{expireDate,jdbcType=VARCHAR})
+    </insert>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.score.Score" resultType="com.dhxx.facade.entity.score.Score">
+        select a.user_id userId,
+            sum(a.total_score) totalScore,
+            sum(a.consume_score) consumeScore,
+            sum(a.expire_score) expireScore,
+            a.user_account userAccount,
+            a.company_name companyName
+        from (
+            select s.user_id, s.total_score, s.consume_score,
+            case when (to_date(sysdate+t.set_value) &gt; s.expire_date and sysdate &lt; s.expire_date)
+            then (s.total_score-s.consume_score) else 0 end expire_score,
+            u.user_account, c.company_name
+            from t_score s
+            left join t_set t on t.set_key = 'score'
+            left join t_user u on u.id = s.user_id
+            left join t_company c on c.company_code = u.company_code
+            where 1=1
+            <if test="param != null and param != ''">
+                and (c.company_name like '%'||#{param}||'%' or u.user_account like '%'||#{param}||'%')
+            </if>
+            <if test="userId != null">
+                and u.company_code=#{companyCode} and u.type=1
+            </if>
+        ) a
+        group by a.user_id, a.user_account, a.company_name
+    </select>
+
+</mapper>

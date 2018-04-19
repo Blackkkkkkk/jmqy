@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.role.RoleMapper">
+
+	<insert id="save" parameterType="com.dhxx.facade.entity.role.Role">
+	    <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+         	 select seq_role.nextval as id from dual
+        </selectKey>
+		insert into t_role
+		  (
+			id,
+			role_name,
+			role_describe,
+			role_type,
+			company_code,
+			remark
+		  )
+		values(
+			#{id},
+			#{roleName, jdbcType=VARCHAR},
+			#{roleDescribe, jdbcType=VARCHAR},
+			#{roleType, jdbcType=VARCHAR},
+			#{companyCode, jdbcType=VARCHAR},
+			#{remark, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<select id="find" parameterType="com.dhxx.facade.entity.role.Role" resultType="com.dhxx.facade.entity.role.Role">  
+    	select 
+    	r.id, 
+    	r.role_name roleName, 
+    	r.role_describe roleDescribe,
+    	r.role_type roleType,
+    	r.company_code companyCode,
+    	r.status status,
+    	r.remark remark
+    	from t_role r
+    	<where>
+    		<if test="id != null">
+				and r.id = #{id}
+			</if>
+			<if test="status != null">
+				and r.status = #{status}
+			</if>
+			<if test="roleType != null">
+				and r.role_type = #{roleType}
+			</if>
+			<if test="companyCode != null and companyCode != ''">
+				and r.company_code = #{companyCode}
+			</if>
+    	</where>
+    	<if test="order != null and order != ''">
+	        <if test="sortType != null and sortType != ''">
+	 			order by ${sortType} ${order}
+	 		</if>
+ 		</if>
+    </select>  
+    
+	
+	<select id="all" resultType="com.dhxx.facade.entity.role.Role">  
+    	select id, role_name roleName, role_describe roleDescribe 
+    	from t_role order by id asc
+    </select>  
+    
+    <select id="infoId" parameterType="java.lang.Long" resultType="com.dhxx.facade.entity.role.Role">  
+    	select id, role_name roleName, role_describe roleDescribe 
+    	from t_role where id = #{id}
+    </select>
+    
+    <delete id="delete" parameterType="com.dhxx.facade.entity.role.Role">
+    	delete from t_role
+    	where id = #{id}
+    </delete>
+    
+    <update id="update" parameterType="com.dhxx.facade.entity.role.Role">
+		update t_role r
+		<set>
+			<if test="roleName != null and roleName != ''">
+				r.role_name = #{roleName,jdbcType=VARCHAR},
+			</if>
+			<if test="roleDescribe != null and roleDescribe != ''">
+				r.role_describe = #{roleDescribe,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				r.status = #{status},
+			</if>
+			<if test="remark != null and remark != ''">
+				r.remark = #{remark,jdbcType=VARCHAR},
+			</if>
+		</set> 
+        where id = #{id}
+	</update>
+    
+</mapper>

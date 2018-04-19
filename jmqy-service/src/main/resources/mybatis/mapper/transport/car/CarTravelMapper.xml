@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.car.CarTravelMapper">
+
+	<select id="list" parameterType="com.dhxx.facade.entity.transport.car.CarTravel" resultType="com.dhxx.facade.entity.transport.car.CarTravel">
+		select
+		t.id,	
+   		t.car_code carCode,
+	    c.car_num carNum,
+	    t.start_time startTime,
+	    t.end_time endTime,
+    	t.car_state carState,
+		t.remark
+    	from t_car_travel t
+    	left join t_car c on c.car_code = t.car_code
+		<where>
+		t.record_status = 0
+		<if test="id !=null">
+			and t.id = #{id} 
+		</if>
+		<if test="carCode !=null and carCode != ''">
+			and t.car_code = #{carCode}
+		</if>
+		<if test="carNum !=null and carNum != ''">
+			<choose>
+				<when test="searchType == '0'">
+					and t.car_num = #{carNum}
+				</when>
+				<otherwise>
+					and (t.car_num like '%'||#{carNum}||'%'  or c.car_num like '%'||#{carNum}||'%')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="driverJobNum !=null and driverJobNum != ''">
+			and t.driver_job_num = #{driverJobNum}
+		</if>
+		<if test="carState !=null and carState !=''">
+			<choose>
+				<when test="searchType == '0'">
+					and t.car_state = #{carState}
+				</when>
+				<otherwise>
+					and t.car_state like '%'||#{carState}||'%'
+				</otherwise>
+			</choose>
+		</if>
+		<if test="createUser !=null and createUser != ''">
+			and t.create_user = #{createUser}
+		</if>
+		<if test="createCompany !=null and createCompany != ''">
+			and t.create_company = #{createCompany}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+	    	<if test="endTimes != null and endTimes != ''">
+	    		and t.start_time &lt;= to_date(#{endTimes},  'yyyy-MM-dd HH24:mi:ss')
+    			and t.end_time &gt;= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+	    	</if>
+		    <if test="endTimes == null or endTimes == ''">
+	    	   	and t.end_time &gt;= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+	    	</if>
+    	</if>
+    	<if test="beginTime == null or beginTime == ''">
+	    	<if test="endTimes != null and endTimes != ''">
+    	   		and t.start_time  &lt;= to_date(#{endTimes},  'yyyy-MM-dd HH24:mi:ss')
+    		</if>
+    	</if>
+		</where>
+		<if test="order != null and order != ''">
+	        <if test="sortType != null and sortType != ''">
+	 			order by ${sortType} ${order}
+	 		</if>
+ 		</if>
+	</select>
+	
+	<update id="updateById"  parameterType="com.dhxx.facade.entity.transport.car.CarTravel">
+        update t_car_travel t
+        <set>
+	        <if test="recordStatus != null">
+				t.record_status = #{recordStatus}
+			</if>
+        </set>
+        where t.id = #{id}
+	</update>
+	
+	
+	<insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.transport.car.CarTravel">
+		merge into t_car_travel t using
+		(
+			select
+			#{id, jdbcType=BIGINT} id,
+			#{carCode, jdbcType=BIGINT} carCode,
+		    #{carNum, jdbcType=BIGINT} carNum,
+		    #{driverJobNum, jdbcType=BIGINT} driverJobNum,
+		    #{startTime, jdbcType=BIGINT} startTime,
+		    #{endTime, jdbcType=BIGINT} endTime,
+	    	#{carState, jdbcType=BIGINT} carState,
+		    #{remark, jdbcType = VARCHAR} remark,
+		    #{createUser, jdbcType = VARCHAR} createUser,
+		    #{createCompany, jdbcType = VARCHAR} createCompany,
+		    #{updateUser, jdbcType = VARCHAR} updateUser
+			from dual
+		)tmp on (
+			tmp.id = t.id
+		)
+		when matched then
+		update set
+		
+	    t.driver_job_num = tmp.driverJobNum,
+	    t.start_time = tmp.startTime,
+	    t.end_time = tmp.endTime,
+    	t.car_state = tmp.carState,
+		t.remark = tmp.remark,
+		t.update_user = tmp.updateUser,
+		t.update_date = sysdate
+		when not matched then
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="reId">
+         	 select SEQ_CAR_TRAVEL.nextval as reId from dual
+        </selectKey>
+		insert(
+			t.id,	
+   			t.car_code,
+		    t.car_num ,
+		    t.driver_job_num,
+		    t.start_time,
+		    t.end_time,
+	    	t.car_state,
+		    t.remark,
+		    t.record_status,
+		    t.create_user,
+		    t.create_company,
+		    t.create_date,
+		    t.update_date
+		    )
+		values(
+			#{reId}, 
+			tmp.carCode,
+		    tmp.carNum,
+		    tmp.driverJobNum,
+		    tmp.startTime,
+		    tmp.endTime,
+	    	tmp.carState,
+		    tmp.remark,
+		    0,
+		    tmp.createUser,
+		    tmp.createCompany,
+		    sysdate,
+		    sysdate
+		)
+
+	</insert>
+
+</mapper>

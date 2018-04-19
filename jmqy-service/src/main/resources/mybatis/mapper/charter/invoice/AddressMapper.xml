@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.charter.invoice.AddressMapper">
+
+    <resultMap id="InvoiceAddresss" type="com.dhxx.facade.entity.charter.invoice.Address">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="recipient" property="recipient"/>
+        <result column="contact_way" property="contactWay"/>
+    </resultMap>
+
+
+<insert id="addAddress" parameterType="com.dhxx.facade.entity.charter.invoice.Address" useGeneratedKeys="true" keyProperty="id">
+    <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+        select addressId.nextval as id from dual
+    </selectKey>
+       insert into t_invoice_address t (
+                  id,
+                  user_id,
+                  address,
+                  create_time,
+                  recipient,
+                  contact_way,
+                  status
+       ) values (
+                  #{id},
+                  #{userId,jdbcType=INTEGER},
+                  #{address,jdbcType=VARCHAR},
+                  #{createTime,jdbcType=TIMESTAMP},
+                  #{recipient,jdbcType=VARCHAR},
+                  #{contactWay,jdbcType=VARCHAR},
+                  #{status,jdbcType=VARCHAR}
+       )
+</insert>
+
+    <update id="updateAddress" parameterType="com.dhxx.facade.entity.charter.invoice.Address">
+        update t_invoice_address  t
+        <set>
+            <if test="recipient != null and recipient != ''">
+                t.recipient=#{recipient},
+            </if>
+            <if test="address != null and address != ''">
+                t.address=#{address},
+            </if>
+            <if test="contactWay != null and contactWay != ''">
+                t.contact_way=#{contactWay},
+            </if>
+            <if test="status != null and status != ''">
+                t.status=#{status},
+            </if>
+        </set>
+       <where>
+           <if test="id != null">
+               and t.id = #{id}
+           </if>
+           <if test="userId != null and userId != ''">
+               and t.user_id = #{userId}
+           </if>
+       </where>
+
+    </update>
+
+
+    <delete id="deletAddress" parameterType="com.dhxx.facade.entity.charter.invoice.Address">
+        delete  t_invoice_address t
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="userId != null and userId != ''">
+                and t.user_id = #{userId}
+            </if>
+        </where>
+    </delete>
+
+    <select id="findAddress" parameterType="com.dhxx.facade.entity.charter.invoice.Address"  resultMap="InvoiceAddresss">
+        select  t.*  from  t_invoice_address t
+        <where>
+            <if test="id != null">
+                and t.id = #{id}
+            </if>
+            <if test="userId != null and userId != ''">
+                and t.user_id = #{userId}
+            </if>
+            <if test="recipient != null and recipient != ''">
+                and t.recipient = #{recipient}
+            </if>
+            <if test="address != null and address != ''">
+                and t.address = #{address}
+            </if>
+            <if test="contactWay != null and contactWay != ''">
+                and t.contact_way = #{contactWay}
+            </if>
+            <if test="status != null and status != ''">
+                and t.status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

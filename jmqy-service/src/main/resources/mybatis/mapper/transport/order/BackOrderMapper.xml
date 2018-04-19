@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.transport.order.BackOrderMapper">
+
+	<select id="list" parameterType="com.dhxx.facade.entity.transport.order.BackOrder" resultType="com.dhxx.facade.entity.transport.order.BackOrder">
+		select
+		b.id,	
+   		b.order_code orderCode,
+		b.start_point startPoint,
+		b.start_lng startLng,
+		b.start_lat startLat,
+		b.start_area startArea,
+		b.start_city startCity,
+		b.end_point endPoint,
+		b.end_lng endLng,
+		b.end_lat endLat,
+		b.end_area endArea,
+		b.end_city endCity,
+		b.via_point viaPoint,
+		b.earliest_departure_time earliestDepartureTime,
+		b.latest_departure_time latestDepartureTime,
+		b.car_code carCode,
+		b.car_num carNum,
+		b.car_type carType,
+		b.driver_code driverCode,
+		b.seat_number seatNumber,
+		b.discount_prices discountPrices,
+		b.range,
+		b.status,
+		b.create_user createuser,
+		b.create_company createCompany,
+		b.effe_time effeTime,
+		b.effe_se_time effeSeTime,
+		b.dwell_time dwellTime,
+		b.charter_order_code charterOrderCode,
+		b.type,
+		b.reserve_up_time reserveUpTime,
+		b.reserve_off_time reserveOffTime
+    	from t_back_order b
+		<where>
+		b.record_status = 0
+		<if test="id !=null">
+			and b.id = #{id} 
+		</if>
+		<if test="orderCode !=null and orderCode != ''">
+			and b.order_code = #{orderCode}
+		</if>
+		<if test="orderCodeSe !=null and orderCodeSe != ''">
+			and b.order_code like '%'||#{orderCodeSe}||'%'
+		</if>
+		<if test="createUser !=null and createUser != ''">
+			and b.create_user = #{createUser}
+		</if>
+		<if test="createCompany !=null and createCompany != ''">
+			and b.create_company = #{createCompany}
+		</if>
+		<if test="startPoint !=null and startPoint != ''">
+			and b.start_point = #{startPoint}
+		</if>
+		<if test="endPoint !=null and endPoint != ''">
+			and b.end_point = #{endPoint}
+		</if>
+		<if test="status !=null">
+			and b.status = #{status}
+		</if>
+		<if test="startArea !=null and startArea != ''">
+			and b.start_area = #{startArea}
+		</if>
+		<if test="endArea !=null and endArea != ''">
+			and b.end_area = #{endArea}
+		</if>
+		<if test="startCity !=null and startCity != ''">
+			and b.start_city = #{startCity}
+		</if>
+		<if test="endCity !=null and endCity != ''">
+			and b.end_city = #{endCity}
+		</if>
+		<if test="type != null">
+			and b.type = #{type}
+		</if>
+		<if test="boardingTime !=null">
+			and b.earliest_departure_time &lt;= #{boardingTime} 
+			and b.latest_departure_time &gt;= #{boardingTime}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+	    	<if test="endTime != null and endTime != ''">
+	    		and b.earliest_departure_time &lt;= to_date(#{endTime},  'yyyy-MM-dd HH24:mi:ss')
+    				and b.latest_departure_time &gt;= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+	    	</if>
+		    <if test="endTime == null or endTime == ''">
+	    	   	and b.latest_departure_time &gt;= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+	    	</if>
+    	</if>
+    	<if test="beginTime == null or beginTime == ''">
+	    	<if test="endTime != null and endTime != ''">
+    	   		and b.earliest_departure_time  &lt;= to_date(#{endTime},  'yyyy-MM-dd HH24:mi:ss')
+    		</if>
+    	</if>
+		<if test="seatNumber !=null">
+			and b.seat_number &gt;= #{seatNumber}
+		</if>
+		<if test="carType !=null and carType !=''">
+			and b.car_type = #{carType}
+		</if>
+		<if test="top !=null">
+			and ROWNUM &lt;= #{top}
+		</if>
+		</where>
+		<if test="top !=null">
+			order by b.discount_prices asc
+		</if>
+		<if test="top ==null">
+			<if test="order != null and order != ''">
+		        <if test="sortType != null and sortType != ''">
+		 			order by ${sortType} ${order}
+		 		</if>
+	 		</if>
+	 		<if test="order == null or order == ''">
+		 		order by b.update_date desc
+	 		</if>
+		</if>
+	</select>
+	
+	<update id="update"  parameterType="com.dhxx.facade.entity.transport.order.BackOrder">
+        update t_back_order b
+        <set>
+	        <if test="recordStatus != null">
+				b.record_status = #{recordStatus},
+			</if>
+			<if test="status != null">
+				b.status = #{status},
+			</if>
+			<if test="cancelTime != null ">
+				b.cancel_time = #{cancelTime},
+			</if>
+        </set>
+        <where>
+         <if test="id != null">
+		 	and b.id = #{id}
+		</if>
+		<if test="orderCode != null and orderCode != ''">
+		 	and b.order_code = #{orderCode}
+		</if>
+        </where>
+	</update>
+	
+	
+	<insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.transport.order.BackOrder">
+		merge into t_back_order b using
+		(
+			select
+		    #{id, jdbcType=VARCHAR} id,
+		    #{orderCode, jdbcType=VARCHAR} orderCode,
+			#{startPoint, jdbcType=VARCHAR} startPoint,
+			#{startLng, jdbcType=VARCHAR} startLng,
+			#{startLat, jdbcType=VARCHAR} startLat,
+			#{startArea, jdbcType=VARCHAR} startArea,
+			#{startCity, jdbcType=VARCHAR} startCity,
+			#{endPoint, jdbcType=VARCHAR} endPoint,
+			#{endLng, jdbcType=VARCHAR} endLng,
+			#{endLat, jdbcType=VARCHAR} endLat,
+			#{endArea, jdbcType=VARCHAR} endArea,
+			#{endCity, jdbcType=VARCHAR} endCity,
+			#{viaPoint, jdbcType=VARCHAR} viaPoint,
+			#{earliestDepartureTime, jdbcType=VARCHAR} earliestDepartureTime,
+			#{range, jdbcType=VARCHAR} range,
+			#{latestDepartureTime, jdbcType=VARCHAR} latestDepartureTime,
+			#{carNum, jdbcType=VARCHAR} carNum,
+			#{carCode, jdbcType=VARCHAR} carCode,
+			#{carType, jdbcType=VARCHAR} carType,
+			#{driverCode, jdbcType=VARCHAR} driverCode,
+			#{seatNumber, jdbcType=VARCHAR} seatNumber,
+			#{distance, jdbcType=VARCHAR} distance,
+  			#{duration, jdbcType=VARCHAR} duration,
+			#{discountPrices, jdbcType=VARCHAR} discountPrices,
+			#{effeTime, jdbcType=VARCHAR} effeTime,
+			#{effeSeTime, jdbcType=VARCHAR} effeSeTime,
+			#{dwellTime, jdbcType=VARCHAR} dwellTime,
+			#{charterOrderCode, jdbcType=VARCHAR} charterOrderCode,
+			#{type, jdbcType=VARCHAR} type,
+			#{reserveUpTime, jdbcType=VARCHAR} reserveUpTime,
+			#{reserveOffTime, jdbcType=VARCHAR} reserveOffTime,
+			#{remark, jdbcType = VARCHAR} remark,
+		    #{createUser, jdbcType = VARCHAR} createUser,
+		    #{createCompany, jdbcType = VARCHAR} createCompany,
+		    #{updateUser, jdbcType = VARCHAR} updateUser
+			from dual
+		)tmp on (
+			tmp.id = b.id
+		)
+		
+		when matched then
+		
+		update set
+	   	b.start_point = tmp.startPoint,
+		b.start_lng = tmp.startLng,
+		b.start_lat = tmp.startLat,
+		b.start_area = tmp.startArea,
+		b.start_city = tmp.startCity,
+		b.end_point = tmp.endPoint,
+		b.end_lng = tmp.endLng,
+		b.end_lat = tmp.endLat,
+		b.end_area = tmp.endArea,
+		b.end_city = tmp.endCity,
+		b.via_point = tmp.viaPoint,
+		b.earliest_departure_time = tmp.earliestDepartureTime,
+		b.latest_departure_time = tmp.latestDepartureTime,
+		b.car_code = tmp.carCode,
+		b.car_type = tmp.carType,
+		b.car_num = tmp.carNum,
+		b.driver_code = tmp.driverCode,
+		b.seat_number = tmp.seatNumber,
+		b.duration = tmp.duration,
+		b.distance = tmp.distance,
+		b.discount_prices = decode(trunc(tmp.discountPrices,-2),0,100,trunc(tmp.discountPrices,-2)),
+		b.range = tmp.range,
+		b.effe_time = tmp.effeTime,
+		b.effe_se_time = tmp.effeSeTime,
+		b.dwell_time = tmp.dwellTime,
+		b.reserve_up_time = tmp.reserveUpTime,
+		b.reserve_off_time = tmp.reserveOffTime,
+		b.remark = tmp.remark,
+		b.update_user = tmp.updateUser,
+		b.update_date = sysdate
+		
+		when not matched then
+		
+		insert(
+			b.id,	
+   			b.order_code,
+			b.start_point,
+			b.start_lng,
+			b.start_lat,
+			b.start_area,
+			b.start_city,
+			b.end_point,
+			b.end_lng,
+			b.end_lat,
+			b.end_area,
+			b.end_city,
+			b.via_point,
+			b.duration,
+			b.distance,
+			b.earliest_departure_time,
+			b.latest_departure_time,
+			b.car_code,
+			b.car_type,
+			b.car_num,
+			b.driver_code,
+			b.seat_number,
+			b.discount_prices,
+			b.range,
+			b.effe_time,
+			b.effe_se_time,
+			b.dwell_time,
+			b.charter_order_code,
+			b.type,
+			b.reserve_up_time,
+			b.reserve_off_time,
+		    b.remark,
+		    b.record_status,
+		    b.create_user,
+		    b.create_company,
+		    b.create_date,
+		    b.update_date
+		)
+		values(
+			SEQ_BACK_ORDER.nextval, 
+			tmp.orderCode,
+			tmp.startPoint,
+			tmp.startLng,
+			tmp.startLat,
+			tmp.startArea,
+			tmp.startCity,
+			tmp.endPoint,
+			tmp.endLng,
+			tmp.endLat,
+			tmp.endArea,
+			tmp.endCity,
+			tmp.viaPoint,
+			tmp.duration,
+			tmp.distance,
+			tmp.earliestDepartureTime,
+			tmp.latestDepartureTime,
+			tmp.carCode,
+			tmp.carType,
+			tmp.carNum,
+			tmp.driverCode,
+			tmp.seatNumber,
+			decode(trunc(tmp.discountPrices,-2),0,100,trunc(tmp.discountPrices,-2)),
+			tmp.range,
+			tmp.effeTime,
+			tmp.effeSeTime,
+			tmp.dwellTime,
+			tmp.charterOrderCode,
+			tmp.type,
+			tmp.reserveUpTime,
+			tmp.reserveOffTime,
+		    tmp.remark,
+		    0,
+		    tmp.createUser,
+		    tmp.createCompany,
+		    sysdate,
+		    sysdate
+		)
+
+	</insert>
+	
+	<!-- 检测匹配中的订单是否支付超时 -->
+	<update id="checkMatch"> 
+		UPDATE T_BACK_ORDER b set b.status = 0
+		where b.status = 1 and b.order_code in(
+		SELECT t.BACK_ORDER_CODE from T_ORDER t
+		where t.STATUS = -1 
+		and ROUND(TO_NUMBER(SYSDATE - t.MATCH_TIME) * 24 * 60 * 60) &gt;= 310
+		and t.BACK_ORDER_CODE is not null)
+	</update>
+
+</mapper>

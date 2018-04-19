@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/usr/local/logs/service_log/serivice.log</file>
+		
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+	      <level>DEBUG</level>
+	      <onMatch>ACCEPT</onMatch>
+	      <onMismatch>DENY</onMismatch>
+	    </filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/usr/local/logs/service_log/serivice-%d{yyyy-MM-dd_HH}.%i.zip</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 综合时间与大小的滚动策略，先按小时滚动，小时内的文件大于10mb时再按大小滚动 -->
+	<appender name="businessLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/usr/local/logs/service_log/business.log</file>
+		
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/usr/local/logs/service_log/business-%d{yyyy-MM-dd_HH}.%i.zip</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 综合时间与大小的滚动策略，先按小时滚动，小时内的文件大于10mb时再按大小滚动 -->
+	<appender name="errorLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/usr/local/logs/service_log/error.log</file>
+		
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+	      <level>ERROR</level>
+	      <onMatch>ACCEPT</onMatch>
+	      <onMismatch>DENY</onMismatch>
+	    </filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/usr/local/logs/service_log/error-%d{yyyy-MM-dd_HH}.%i.zip</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+
+	<logger name="com.dhxx" level="DEBUG"/>
+
+	<!-- <logger name="com.alibaba" level="DEBUG"/> -->
+	<!-- WARN-->
+	<root level="WARN">
+		<appender-ref ref="console" />
+		<appender-ref ref="rollingFile" />
+		<appender-ref ref="errorLogFile" />
+	</root>
+	
+</configuration>
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sync.service.mapper.sqlserver.GprsMapper">
+
+    <resultMap id="map" type="java.util.Map">
+        <result column="longitude" property="longitude"></result>
+        <result column="latitude" property="latitude"></result>
+    </resultMap>
+
+
+    <select id="find" parameterType="com.sync.facade.entity.sqlserver.Car" resultMap="map">
+
+        SELECT  DISTINCT  (convert(FLOAT,LONGITUDE)/3600000) as LONGITUDE, (convert(FLOAT,LATITUDE)/3600000) as LATITUDE FROM V_GPSDATA12
+        <where>
+            <if test="carNum != '' and carNum != null">
+                and CAR_MARK=#{carNum}
+            </if>
+            <if test="boaringTime != '' and boaringTime != null and debusTime != '' and debusTime != null">
+                and RECORD_TIME BETWEEN #{boaringTime} and #{debusTime};
+            </if>
+        </where>
+    </select>
+
+</mapper>

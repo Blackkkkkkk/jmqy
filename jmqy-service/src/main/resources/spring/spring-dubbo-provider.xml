@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+            http://www.springframework.org/schema/beans/spring-beans-4.1.xsd  
+            http://code.alibabatech.com/schema/dubbo  
+            http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<dubbo:application name="jmqy-service" />
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+	<!-- <dubbo:registry protocol="zookeeper" Address="${dubbo.registry.Address}"
+		/> -->
+	<dubbo:registry address="${dubbo.registry.address}" />
+
+	<!-- 只订阅，不注册 <dubbo:registry Address="${dubbo.registry.Address}" register="false" /> -->
+	<!-- 禁用订阅配置，允许注册 <dubbo:registry id="qdRegistry" Address="10.20.141.150:9090" subscribe="false" /> -->
+
+	<!-- <dubbo:monitor protocol="registry" /> --><!--通过注册中心获取monitor地址后建立连接 -->
+	<!-- 多协议配置 -->
+	<dubbo:protocol name="dubbo" port="9093" />
+	<!-- <dubbo:protocol name="rmi" port="1099" /> -->
+	<!-- 监控中心配置，protocol="registry"，表示从注册中心发现监控中心地址 -->
+
+
+	<dubbo:provider timeout="1000000" threadpool="fixed" threads="100" loadbalance="random" retries="1" cluster="failover" />
+
+
+
+    <!-- 账户子系统服务接口引用 -->
+	<!-- <import resource="spring-provider-waybill.xml" /> -->
+
+</beans>  

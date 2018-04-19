@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd"
+	default-lazy-init="true">
+
+	<description>Quartz的定时任务配置</description>
+
+	<!-- Quartz集群Schduler -->
+	<bean id="mapScheduler" lazy-init="false" autowire="no"
+		  class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+		  destroy-method="destroy">
+		<!-- quartz配置文件路径, 指向cluster配置 -->
+		<property name="applicationContextSchedulerContextKey" value="applicationContext" />
+		<!--<property name="dataSource" ref="dataSource"/>-->
+		<property name="configLocation" value="classpath:production/quartz.properties" />
+		<property name="overwriteExistingJobs" value="true" />
+		<property name="startupDelay" value="5" />
+		<property name="triggers">
+			<list>
+				<ref bean="gpsTrigger"/>
+			</list>
+		</property>
+	</bean>
+
+	<!-- GPS定时器配置 -->
+
+	<bean id="gpsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="getGps" />
+		<property name="cronExpression" value="0/20 * * * * ?" />
+	</bean>
+
+
+	<bean id="getGps" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="durability" value="true"></property>
+		<property name="name" value="getGpsName"></property>
+		<property name="group" value="getGpsGroup"></property>
+		<property name="requestsRecovery" value="true"></property>
+		<property name="jobClass" value="com.sync.service.timer.MyQuartzJob"></property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="gpsJob"></entry>
+				<entry key="targetMethod" value="doTask"></entry>
+			</map>
+		</property>
+	</bean>
+
+
+
+</beans>

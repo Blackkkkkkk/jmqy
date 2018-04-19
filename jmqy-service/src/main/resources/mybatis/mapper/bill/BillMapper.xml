@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.bill.BillMapper">
+
+	<insert id="save" parameterType="com.dhxx.facade.entity.bill.Bill">
+		insert into t_bill
+		(
+			id,
+			bill_type,
+			money,
+	        trade_mode,
+	        order_code,
+	        three_order_no,
+	        user_id,
+	        company_code,
+	        create_date,
+	        record_status
+		)
+		values(
+			seq_bill.nextval,
+			#{billType,jdbcType=VARCHAR}, 
+			#{money,jdbcType=VARCHAR},
+			#{tradeMode,jdbcType=VARCHAR},
+			#{orderCode,jdbcType=VARCHAR},
+			#{threeOrderNo,jdbcType=VARCHAR},
+			#{userId,jdbcType=VARCHAR}, 
+			#{companyCode,jdbcType=VARCHAR},
+			sysdate,
+			#{recordStatus,jdbcType=VARCHAR}
+		)
+	</insert>
+
+    <select id="find" parameterType="com.dhxx.facade.entity.bill.Bill" resultType="com.dhxx.facade.entity.bill.Bill">
+        select 
+        b.id,
+        b.user_id userId,
+        p.company_name companyName,
+        u.user_name userName,
+        b.bill_type billType,
+        b.money money,
+        b.trade_mode tradeMode,
+        b.order_code orderCode,
+        b.three_order_no threeOrderNo,
+        b.create_date createDate
+        from t_bill b
+        left join t_user u on u.id = b.user_id
+        left join t_company p on p.company_code = u.company_code
+        <where>
+        	<if test="id != null">
+        		and b.id = #{id}
+        	</if>
+        	<if test="userId != null">
+        		and b.user_id = #{userId}
+        	</if>
+        	<if test="companyCode != null and companyCode != ''">
+        		and b.company_code = #{companyCode}
+        	</if>
+        </where>
+    </select>
+	
+</mapper>

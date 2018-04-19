@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd"
+       default-lazy-init="true">
+
+    <description>Spring-kafka配置</description>
+
+    <!-- 定义consumer的参数 -->
+    <bean id="consumerProperties" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="bootstrap.servers" value="localhost:9092"/>
+                <entry key="group.id" value="0"/>
+                <entry key="enable.auto.commit" value="false"/>
+                <entry key="auto.commit.interval.ms" value="10"/>
+                <entry key="session.timeout.ms" value="30000"/>
+                <entry key="auto.offset.reset" value="earliest"></entry>
+                <entry key="key.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer"/>
+                <entry key="value.deserializer" value="org.apache.kafka.common.serialization.StringDeserializer"/>
+                <entry key="receive.buffer.bytes" value="10485760"/>
+                <entry key="max.poll.records" value="5000"/>
+                <entry key="fetch.max.wait.ms" value="100"/>
+
+                <!--<entry key="client.id" value="native-consumer-1"/>-->
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- 创建consumerFactory bean -->
+    <bean id="consumerFactory" class="org.springframework.kafka.core.DefaultKafkaConsumerFactory">
+        <constructor-arg>
+            <ref bean="consumerProperties"/>
+        </constructor-arg>
+    </bean>
+
+    <!--  自定义 消费者配置列表-->
+    <!-- 实际执行消息消费的类1 -->
+    <!-- table数据消费者 -->
+    <bean id="gpsConsumerService" class="com.dhxx.service.consumer.GpsConsumerListener"/>
+    <!-- 配置容器 -->
+    <bean id="gpsContainerProperties" class="org.springframework.kafka.listener.config.ContainerProperties">
+        <!-- 监听的topic ContainerProperties 中构造函数参数，多个topic 用，隔开 -->
+        <constructor-arg value="gps-topic"/>
+        <!-- The max time to block in the consumer waiting for records. -->
+        <!--<property name="pollTimeout" value="100"/> -->
+        <property name="messageListener" ref="gpsConsumerService"/>
+    </bean>
+    <!-- 监听容器 -->
+    <bean id="messageListenerContainer" class="org.springframework.kafka.listener.KafkaMessageListenerContainer"
+          init-method="doStart">
+        <constructor-arg ref="consumerFactory"/>
+        <constructor-arg ref="gpsContainerProperties"/>
+    </bean>
+
+    <!-- 实际执行消息消费的类2 -->
+    <!-- native目录数据消费者 -->
+    <!--<bean id="nativeDirectoryConsumerService" class="com.dhxx.service.biz.syncConsumer.directory.NativeDirectoryConsumerListener"/>
+  	&lt;!&ndash; 配置容器 &ndash;&gt;
+    <bean id="nativeDirectoryContainerProperties" class="org.springframework.kafka.listener.config.ContainerProperties">
+    	&lt;!&ndash; 监听的topic ContainerProperties 中构造函数参数，多个topic 用，隔开 &ndash;&gt;
+        <constructor-arg value="directory-topic"/>
+        &lt;!&ndash; The max time to block in the consumer waiting for records. &ndash;&gt;
+        <property name="pollTimeout" value="100"/>
+        <property name="messageListener" ref="nativeDirectoryConsumerService"/>
+    </bean>
+  	&lt;!&ndash; 监听容器 &ndash;&gt;
+    <bean id="nativeDirectoryrContainer" class="org.springframework.kafka.listener.KafkaMessageListenerContainer"
+          init-method="doStart">
+        <constructor-arg ref="consumerFactory"/>
+        <constructor-arg ref="nativeDirectoryContainerProperties"/>
+    </bean>-->
+
+</beans>

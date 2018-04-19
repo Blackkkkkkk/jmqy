@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.area.AreaMapper">
+
+    <select id="list" parameterType="com.dhxx.facade.entity.province.Province" resultType="com.dhxx.facade.entity.province.Province">
+          select p.province_id id, p.province name
+          from t_province p
+          order by p.province_id asc
+    </select>
+
+    <select id="cityList" parameterType="com.dhxx.facade.entity.city.City" resultType="com.dhxx.facade.entity.city.City">
+          select c.city_id cityId, c.city cityName
+          from t_city c
+          where c.father_id = #{parentId}
+          order by c.city_id asc
+    </select>
+
+    <select id="areaList" parameterType="com.dhxx.facade.entity.area.Area" resultType="com.dhxx.facade.entity.area.Area">
+        select a.area_id areaId, a.area areaName
+        from t_area a
+        <where>
+               1 = 1
+            <if test="parentId != null and parentId !=''">
+                AND  a.father_id = #{parentId}
+            </if>
+            order by a.area_id asc
+
+        </where>
+    </select>
+
+</mapper>

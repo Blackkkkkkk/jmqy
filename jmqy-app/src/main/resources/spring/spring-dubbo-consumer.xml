@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+            http://www.springframework.org/schema/beans/spring-beans-4.1.xsd  
+            http://code.alibabatech.com/schema/dubbo  
+            http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<dubbo:application name="jmqy-app" owner="dhxx" compiler="javassist" logger="slf4j" />
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+	<!-- <dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}"/> -->
+	<dubbo:registry address="${dubbo.registry.address}" />
+
+	<!-- 只订阅，不注册 <dubbo:registry address="${dubbo.registry.address}" register="false" /> -->
+	<!-- 禁用订阅配置，允许注册 <dubbo:registry id="qdRegistry" address="10.20.141.150:9090" subscribe="false" /> -->
+
+	<!-- <dubbo:monitor protocol="registry"/> -->
+	<!--通过注册中心获取monitor地址后建立连接 -->
+	<!-- 多协议配置 contextpath="pda" -->
+	<dubbo:protocol name="rest" server="tomcat" port="9091" contextpath="jmqy" 
+		extension="com.dhxx.service.app.container.SecurityFilter,
+				com.dhxx.service.app.container.ControllFilter, 
+				com.dhxx.service.app.exception.BusinessExceptionMapper, 
+				com.dhxx.service.app.exception.ValidationExceptionMapper" />
+	<!-- <dubbo:protocol name="rmi" port="1099" /> -->
+
+ 	<!-- <dubbo:protocol name="dubbo" port="20811" /> --> 
+	<!-- 监控中心配置，protocol="registry"，表示从注册中心发现监控中心地址 -->
+
+	<dubbo:consumer check="false" timeout="30000" loadbalance="random" retries="0" />
+	<!-- <dubbo:provider timeout="10000" threadpool="fixed" threads="100" loadbalance="random" retries="2" cluster="failover" /> --> 
+
+</beans>  

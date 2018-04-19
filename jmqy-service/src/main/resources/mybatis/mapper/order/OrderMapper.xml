@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.order.OrderMapper">
+
+    <resultMap id="OrderMap" type="com.dhxx.facade.entity.order.Order">
+        <id column="id" property="id"/>
+        <result column="big_order_code" property="bigOrderCode"/>
+        <result column="order_code" property="orderCode"/>
+        <result column="charter_code" property="charterCode"/>
+        <result column="transporter_code" property="transporterCode"/>
+        <result column="start_point" property="startPoint"/>
+        <result column="start_lng" property="startLng"/>
+        <result column="start_lat" property="startLat"/>
+        <result column="start_area" property="startArea"/>
+        <result column="start_city" property="startCity"/>
+        <result column="end_point" property="endPoint"/>
+        <result column="end_lng" property="endLng"/>
+        <result column="end_lat" property="endLat"/>
+        <result column="end_area" property="endArea"/>
+        <result column="end_city" property="endCity"/>
+        <result column="via_point" property="viaPoint"/>
+        <result column="boarding_time" property="boardingTime"/>
+        <result column="debus_time" property="debusTime"/>
+        <result column="track_board_time" property="trackBoardTime"/>
+        <result column="track_debus_time" property="trackDebusTime"/>
+        <result column="charter_days" property="charterDays"/>
+        <result column="population" property="population"/>
+        <result column="additional" property="additional"/>
+        <result column="charter_type" property="charterType"/>
+        <result column="settlement" property="settlement"/>
+        <result column="status" property="status"/>
+        <result column="payment_status" property="paymentStatus"/>
+        <result column="payment_type" property="paymentType"/>
+        <result column="amount" property="amount"/>
+        <result column="track_time" property="trackTime"/>
+        <result column="trip_type" property="tripType"/>
+        <result column="record_status" property="recordStatus"/>
+        <result column="order_placer" property="orderPlacer"/>
+        <result column="order_receiver" property="orderReceiver"/>
+        <result column="user_account" property="placerAccount"/>
+        <result column="company_name" property="companyName"/>
+        <result column="car_code" property="carCode"/>
+        <result column="car_num" property="carNum"/>
+        <result column="driver_code" property="driverCode"/>
+        <result column="vice_driver_code" property="viceDriverCode"/>
+        <result column="amount" property="amount"/>
+        <result column="distance" property="distance"/>
+        <result column="duration" property="duration"/>
+        <result column="back_order_code" property="backOrderCode"/>
+        <result column="carType" property="carType"/>
+        <result column="link_man" property="linkMan"/>
+        <result column="link_phone" property="linkPhone"/>
+        <result column="driverName" property="driverName"/>
+        <result column="car_types" property="carTypes"/>
+        <result column="car_amounts" property="carAmounts"/>
+        <result column="prices" property="prices"/>
+        <result column="reserve_up_time" property="reserveUpTime"/>
+        <result column="reserve_off_time" property="reserveOffTime"/>
+        <result column="refuse_reason" property="refuseReason"/>
+        <result column="evaluate_id" property="evaluateId"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="place_time" property="placeTime"></result>
+        <result column="pay_type" property="payType"></result>
+        <result column="charterCompanyName" property="charterCompanyName"></result>
+        <result column="via_point_app" property="viaPointApp"></result>
+        <!--退款表字段-->
+        <result column="refund_code" property="refundCode"></result>
+        <result column="refund_apply_time" property="refundApplyTime"></result>
+        <result column="refund_reality_time" property="refundRealityTime"></result>
+        <result column="refund_status" property="refundStatus"></result>
+        <result column="update_status" property="updateStatus"></result>
+        <result column="coefficient" property="coefficient"></result>
+        <result column="refund_money" property="refundMoney"></result>
+        <result column="refund_reality_money" property="refundRealityMoney"></result>
+    </resultMap>
+
+    <select id="find" parameterType="com.dhxx.facade.entity.order.Order" resultMap="OrderMap">
+        select t.*,
+        d.name driverName,
+        d.phone driverPhone,
+        dd.name viceDriverName,
+        dd.phone viceDriverPhone,
+        c.car_type carType,
+        p.company_name companyName,
+        p1.company_name charterCompanyName,
+        i.order_status orderstatus,
+        decode(re.refund_Status,null,3, re.refund_Status) refundStatus
+        from t_order t
+        left join t_car c on c.car_code = t.car_code
+        left join t_company p on c.company_code =p.company_code
+        left join t_company p1 on t.CHARTER_CODE = p1.company_code
+        left join t_driver d on d.code = t.driver_code
+        left join t_driver dd on dd.code = t.vice_driver_code
+        left join t_invoice i on t.order_code = i.order_code
+        left join t_refund re on t.order_code = re.order_code
+        where t.record_status = 0
+        <if test="id != null  and id != ''">
+            and t.id = #{id}
+        </if>
+        <if test="bigOrderCode != null and bigOrderCode != ''">
+            and t.big_order_code = #{bigOrderCode}
+        </if>
+        <if test="orderCodeSe !=null and orderCodeSe != ''">
+            and t.order_code like '%'||#{orderCodeSe}||'%'
+        </if>
+        <if test="orderCode != null and orderCode != ''">
+            and t.order_code = #{orderCode}
+        </if>
+        <if test="tripType != null and tripType !=''">
+            and t.trip_type = #{tripType}
+        </if>
+        <if test="orderPlacer != null and orderPlacer != ''">
+            and t.order_placer = #{orderPlacer}
+        </if>
+        <if test="status != null ">
+            and t.status = #{status}
+        </if>
+        <if test="tripType != null and tripType !=''">
+            and t.trip_type = #{tripType}
+        </if>
+        <if test="settlementLists == null ">
+            <if test="settlement != null ">
+                and t.settlement = #{settlement}
+            </if>
+        </if>
+        <if test="beginTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'MI') >= trunc(#{beginTime},'MI')
+ 			]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'MI') <= trunc(#{endTime},'MI')
+ 			]]>
+        </if>
+        <if test="taskTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'dd') = trunc(#{taskTime,jdbcType=TIMESTAMP},'dd')
+ 			]]>
+        </if>
+        <if test="charterCode != null and charterCode != ''">
+            and t.charter_code = #{charterCode}
+        </if>
+        <if test="recordStatus != null">
+            and t.record_status = #{recordStatus}
+        </if>
+        <if test="transporterCode != null and transporterCode != ''">
+            and t.transporter_code = #{transporterCode}
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            and (t.driver_code = #{driverCode} or t.vice_driver_code = #{driverCode})
+        </if>
+        <if test="charterType != null">
+            and t.charter_type = #{charterType}
+        </if>
+        <if test="paymentStatusLists == null ">
+        <if test="paymentStatus != null">
+            and t.payment_status = #{paymentStatus}
+        </if>
+        </if>
+        <!--模糊查询地点-->
+        <if test="searchPlace != null and searchPlace != ''">
+            and
+            (
+            t.START_CITY||t.START_AREA||t.START_POINT like concat(concat('%',#{searchPlace}),'%')
+            OR t.END_CITY||t.END_AREA||t.END_POINT like concat(concat('%',#{searchPlace}),'%')
+            )
+        </if>
+        <if test="orderStatus != null and orderStatus !=''">
+            <choose>
+                <when test="orderStatus =='0'.toString()">
+                    and nvl(i.order_status,'0') not in ('1','2','3')
+                </when>
+                <otherwise>
+                    and i.order_status in
+                    <foreach collection="orderStatusList" index="index" item="orderStatus" open="(" separator=","
+                             close=")">
+                        #{orderStatus}
+                    </foreach>
+
+                </otherwise>
+            </choose>
+        </if>
+        <if test="driverName !=null and driverName != ''">
+            <choose>
+                <when test="searchType == '0'">
+                    and d.name = #{driverName}
+                </when>
+                <otherwise>
+                    and d.name like '%'||#{driverName}||'%'
+                </otherwise>
+            </choose>
+        </if>
+        <if test="carType !=null and carType != ''">
+            <choose>
+                <when test="searchType == '0'">
+                    and c.car_type = #{carType}
+                </when>
+                <otherwise>
+                    and c.car_type like '%'||#{carType}||'%'
+                </otherwise>
+            </choose>
+        </if>
+        <if test="linkMan !=null and linkMan != ''">
+            <choose>
+                <when test="searchType == '0'">
+                    and t.link_man = #{linkMan}
+                </when>
+                <otherwise>
+                    and t.link_man like '%'||#{linkMan}||'%'
+                </otherwise>
+            </choose>
+        </if>
+        <if test="idList != null">
+            and t.status in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="settlementLists != null">
+            and t.settlement in
+            <foreach collection="settlementLists" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="paymentStatusLists != null">
+            and t.payment_status in
+            <foreach collection="paymentStatusLists" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+        <if test="order == null or order == ''">
+            order by t.boarding_time desc ,t.order_code desc,t.car_num desc
+        </if>
+    </select>
+
+    <select id="remind" parameterType="com.dhxx.facade.entity.order.Order" resultMap="OrderMap">
+        select t.*, u.user_account, c.company_name,
+        decode(re.refund_Status,null,3, re.refund_Status) refundStatus,
+        re.refund_money refundMoney
+        from t_order t
+        left join t_user u on u.id = t.order_placer
+        left join t_company c on c.company_code = t.transporter_code
+        left join t_refund re on t.order_code = re.order_code
+        where t.record_status = 0
+        <if test="param != null and param != ''">
+            and (u.user_account like '%'||#{param}||'%' or t.order_code like '%'||#{param}||'%')
+        </if>
+        <if test="beginTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'dd') >= trunc(#{beginTime},'dd')
+ 			]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'dd') <= trunc(#{endTime},'dd')
+ 			]]>
+        </if>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+
+        <if test="order == null or order == ''">
+            order by t.create_date desc
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.order.Order" useGeneratedKeys="true" keyProperty="id">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select seq_user.nextval as id from dual
+        </selectKey>
+        insert into t_order (
+        id,
+        big_order_code,
+        order_code,
+        charter_code,
+        start_lng,
+        start_lat,
+        start_area,
+        start_city,
+        end_lng,
+        end_lat,
+        end_area,
+        end_city,
+        start_point,
+        end_point,
+        via_point,
+        boarding_time,
+        debus_time,
+        track_board_time,
+        track_debus_time,
+        charter_days,
+        population,
+        additional,
+        trip_type,
+        charter_type,
+        order_placer,
+        create_date,
+        record_status,
+        distance,
+        duration,
+        amount,
+        back_order_code,
+        car_code,
+        car_num,
+        car_type,
+        driver_code,
+        transporter_code,
+        status,
+        match_time,
+        reserve_up_time,
+        reserve_off_time,
+        car_types,
+        car_amounts,
+        prices,
+        pay_type,
+        via_point_app
+        ) values(
+        #{id},
+        #{bigOrderCode,jdbcType=VARCHAR},
+        #{orderCode,jdbcType=VARCHAR},
+        #{charterCode,jdbcType=VARCHAR},
+        #{startLng,jdbcType=VARCHAR},
+        #{startLat,jdbcType=VARCHAR},
+        #{startArea,jdbcType=VARCHAR},
+        #{startCity,jdbcType=VARCHAR},
+        #{endLng,jdbcType=VARCHAR},
+        #{endLat,jdbcType=VARCHAR},
+        #{endArea,jdbcType=VARCHAR},
+        #{endCity,jdbcType=VARCHAR},
+        #{startPoint,jdbcType=VARCHAR},
+        #{endPoint,jdbcType=VARCHAR},
+        #{viaPoint,jdbcType=VARCHAR},
+        #{boardingTime,jdbcType=TIMESTAMP},
+        #{debusTime,jdbcType=TIMESTAMP},
+        #{trackBoardTime,jdbcType=TIMESTAMP},
+        #{trackDebusTime,jdbcType=TIMESTAMP},
+        #{charterDays,jdbcType=INTEGER},
+        #{population,jdbcType=INTEGER},
+        #{additional,jdbcType=INTEGER},
+        #{tripType,jdbcType=INTEGER},
+        #{charterType,jdbcType=INTEGER},
+        #{orderPlacer,jdbcType=INTEGER},
+        sysdate,
+        0,
+        #{distance,jdbcType=VARCHAR},
+        #{duration,jdbcType=VARCHAR},
+        #{amount,jdbcType=VARCHAR},
+        #{backOrderCode,jdbcType=VARCHAR},
+        #{carCode,jdbcType=VARCHAR},
+        #{carNum,jdbcType=VARCHAR},
+        #{carType,jdbcType=VARCHAR},
+        #{driverCode,jdbcType=VARCHAR},
+        #{transporterCode,jdbcType=VARCHAR},
+        #{status,jdbcType=INTEGER},
+        sysdate,
+        #{reserveUpTime,jdbcType=TIMESTAMP},
+        #{reserveOffTime,jdbcType=TIMESTAMP},
+        #{carTypes,jdbcType=VARCHAR},
+        #{carAmounts,jdbcType=VARCHAR},
+        #{prices,jdbcType=VARCHAR},
+        #{payType,jdbcType=VARCHAR},
+        #{viaPointApp,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.order.Order">
+        update t_order t
+        <set>
+            <if test="charterCode != null and charterCode != ''">
+                t.charter_code = #{charterCode,jdbcType=VARCHAR},
+            </if>
+            <if test="startPoint != null and startPoint != ''">
+                t.start_point = #{startPoint,jdbcType=VARCHAR},
+            </if>
+            <if test="startLng != null and startLng != ''">
+                t.start_lng = #{startLng,jdbcType=VARCHAR},
+            </if>
+            <if test="startArea != null and startArea != ''">
+                t.start_area = #{startArea},
+            </if>
+            <if test="startCity != null and startCity != ''">
+                t.start_city = #{startCity},
+            </if>
+            <if test="startLat != null and startLat != ''">
+                t.start_lat = #{startLat,jdbcType=VARCHAR},
+            </if>
+            <if test="endPoint != null and endPoint != ''">
+                t.end_point = #{endPoint,jdbcType=VARCHAR},
+            </if>
+            <if test="endArea != null and endArea != ''">
+                t.end_area = #{endArea},
+            </if>
+            <if test="endCity != null and endCity != ''">
+                t.end_city = #{endCity},
+            </if>
+            <if test="endLng != null and endLng != ''">
+                t.end_lng = #{endLng,jdbcType=VARCHAR},
+            </if>
+            <if test="endLat != null and endLat != ''">
+                t.end_lat = #{endLat,jdbcType=VARCHAR},
+            </if>
+            <if test="viaPoint != null and viaPoint != ''">
+                t.via_point = #{viaPoint,jdbcType=VARCHAR},
+            </if>
+            <if test="boardingTime != null">
+                t.boarding_time = #{boardingTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="debusTime != null">
+                t.debus_time = #{debusTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="trackBoardTime != null">
+                t.track_board_time = #{trackBoardTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="trackDebusTime != null">
+                t.track_debus_time = #{trackDebusTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="charterDays != null">
+                t.charter_days = #{charterDays,jdbcType=INTEGER},
+            </if>
+            <if test="population != null">
+                t.population = #{population,jdbcType=INTEGER},
+            </if>
+            <if test="additional != null and additional != ''">
+                t.additional = #{additional,jdbcType=INTEGER},
+            </if>
+            <if test="tripType != null">
+                t.trip_type = #{tripType,jdbcType=INTEGER},
+            </if>
+            <if test="paymentType != null">
+                t.payment_type = #{paymentType},
+            </if>
+            <if test="charterType != null">
+                t.charter_type = #{charterType,jdbcType=INTEGER},
+            </if>
+            <if test="recordStatus != null">
+                t.record_status = #{recordStatus},
+            </if>
+            <if test="updateDate != null">
+                t.update_date = sysdate,
+            </if>
+            <if test="status != null">
+                t.status = #{status},
+            </if>
+            <if test="complaintId != null">
+                t.complaint_id = #{complaintId},
+            </if>
+            <if test="invoiceId != null ">
+                t.invoice_id = #{invoiceId},
+            </if>
+            <if test="refuseReason != null and refuseReason != ''">
+                t.refuse_reason = #{refuseReason},
+            </if>
+            <if test="carCode != null and carCode != ''">
+                t.car_code = #{carCode},
+            </if>
+            <if test="driverCode != null and driverCode != ''">
+                t.driver_code = #{driverCode},
+            </if>
+            <if test="viceDriverCode != null and viceDriverCode != ''">
+                t.vice_driver_code = #{viceDriverCode},
+            </if>
+            <if test="carNum != null and carNum != ''">
+                t.car_num = #{carNum},
+            </if>
+            <if test="carType != null and carType != ''">
+                t.car_type = #{carType},
+            </if>
+            <if test="actualUpTime != null">
+                t.actual_up_time = #{actualUpTime},
+            </if>
+            <if test="actualOffTime != null">
+                t.actual_off_time = #{actualOffTime},
+            </if>
+            <if test="evaluateId != null ">
+                t.evaluate_id = #{evaluateId},
+            </if>
+            <if test="paymentStatus != null ">
+                t.payment_status = #{paymentStatus},
+            </if>
+            <if test="linkMan != null and linkMan != ''">
+                t.link_man = #{linkMan},
+            </if>
+            <if test="linkPhone != null and linkPhone != ''">
+                t.link_phone = #{linkPhone},
+            </if>
+            <if test="distance != null">
+                t.distance = #{distance},
+            </if>
+            <if test="duration != null">
+                t.duration = #{duration},
+            </if>
+            <if test="backOrderCode != null and backOrderCode != ''">
+                t.back_order_code = #{backOrderCode},
+            </if>
+            <if test="orderReceiver != null and orderReceiver != ''">
+                t.order_receiver = #{orderReceiver},
+            </if>
+            <if test="settlement != null and settlement != ''">
+                t.settlement = #{settlement},
+            </if>
+            <if test="receiveTime != null">
+                t.receive_time = #{receiveTime},
+            </if>
+            <if test="flag != null and (flag == 1 or flag == 2)">
+                t.match_time = sysdate,
+            </if>
+            <if test="reserveUpTime != null">
+                t.reserve_up_time = #{reserveUpTime},
+            </if>
+            <if test="reserveOffTime != null">
+                t.reserve_off_time = #{reserveOffTime},
+            </if>
+            <if test="placeTime != null">
+                t.place_time = #{placeTime},
+            </if>
+            <if test="carTypes != null and carTypes != ''">
+                t.car_types = #{carTypes},
+            </if>
+            <if test="carAmounts != null and carAmounts != ''">
+                t.car_amounts = #{carAmounts},
+            </if>
+            <if test="prices != null and prices != ''">
+                t.prices = #{prices},
+            </if>
+            <if test="payType != null and payType != ''">
+                t.pay_type = #{payType},
+            </if>
+            <if test="cancelTime != null ">
+                t.cancel_time = #{cancelTime},
+            </if>
+        </set>
+        where t.record_status = 0
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="idList != null">
+            and t.status in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="orderPlacer != null and orderPlacer != ''">
+            and t.order_placer = #{orderPlacer}
+        </if>
+        <if test="charterCode != null and charterCode != ''">
+            and t.charter_code = #{charterCode}
+        </if>
+        <if test="orderCode != null and orderCode != ''">
+            and t.order_code = #{orderCode}
+        </if>
+        <if test="bigOrderCode != null and bigOrderCode != ''">
+            and t.big_order_code = #{bigOrderCode}
+        </if>
+    </update>
+
+    <!-- 删除订单 -->
+    <delete id="delete" parameterType="com.dhxx.facade.entity.order.Order">
+		delete from t_order
+		where id = #{id}
+	</delete>
+
+    <!-- 检测匹配中的订单是否支付超时 -->
+    <update id="checkMatch">
+		UPDATE T_ORDER t
+		set t.STATUS = 4
+		where t.STATUS = -1
+		and ROUND(TO_NUMBER(SYSDATE - t.MATCH_TIME) * 24 * 60 * 60) &gt;= 310
+	</update>
+
+    <!-- 检测支付后的订单是否超时确认 -->
+    <update id="checkAccept">
+		UPDATE T_ORDER t
+		set t.STATUS = 5
+		where t.STATUS = 0
+		and ROUND(TO_NUMBER(SYSDATE - t.place_time) * 24 * 60 * 60) &gt;= 3600
+	</update>
+
+
+    <!-- 取消支付后的订单锁定10分钟后释放锁定 -->
+    <update id="checkCancel">
+        UPDATE T_ORDER t
+        set t.STATUS = -4,
+         t.cancel_time = null
+        where t.STATUS = 6
+        and t.cancel_time is NOT null
+        and ROUND(TO_NUMBER(SYSDATE - t.cancel_time) * 24 * 60 * 60) &gt;= 600
+    </update>
+
+    <!-- 取消支付后的订单锁定10分钟后释放锁定 -->
+    <update id="checkCancelBackOrder">
+        UPDATE T_BACK_ORDER t
+        set t.STATUS = 0
+        where t.STATUS = 3
+        and t.cancel_time is NOT null
+        and ROUND(TO_NUMBER(SYSDATE - t.cancel_time) * 24 * 60 * 60) &gt;= 600
+    </update>
+
+
+    <!-- 统计订单 -->
+    <select id="statistics" parameterType="com.dhxx.facade.entity.order.Order" resultType="java.lang.Integer">
+        select
+        count(*)
+        from t_order t
+        where t.record_status = 0
+        <if test="idList != null">
+            and t.status in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="transporterCode != null and transporterCode != ''">
+            and t.transporter_code = #{transporterCode}
+        </if>
+        <if test="orderPlacer != null and orderPlacer != ''">
+            and t.order_placer = #{orderPlacer}
+        </if>
+        <if test="status != null">
+            and t.status = #{status}
+        </if>
+        <if test="charterCode != null and charterCode != ''">
+            and t.charter_code = #{charterCode}
+        </if>
+    </select>
+
+
+    <!-- 查找推荐车辆，根据车辆评价星级 -->
+    <resultMap id="findCarByScoreMap" type="com.dhxx.facade.entity.order.Order">
+        <result column="car_type" property="carType"/>
+        <result column="car_code" property="carCode"/>
+        <result column="amount" property="amount"/>
+    </resultMap>
+    <select id="findCarByScore" parameterType="com.dhxx.facade.entity.order.Order" resultMap="findCarByScoreMap">
+		select
+		  ct.car_type,
+		  ct.car_code,
+		  ceil(
+			  pr1.coefficient*
+			  pr2.coefficient*
+			  pr3.coefficient*
+			  pr4.coefficient*
+			  pr5.coefficient*
+			  ceil(#{distance}/1000)+
+			  ceil(GetDistance(ct.lng, ct.lat, #{startLng}, #{startLat})/1000)*pr7.coefficient
+		  ) amount
+		from (
+		   	select
+		      c.car_type,
+		      c.car_code,
+		      c.seat_number,
+		      ceil(months_between(sysdate, c.made_date) / 12)  madeDate,
+		      c.site,
+		      c.lng,
+		      c.lat,
+		      decode(t.carScoreSum,null,0,t.carScoreSum) scores
+		    from t_car c
+		    left join (
+		      select
+			    o.car_code,
+			    sum(e.to_car_score) carScoreSum
+		      from t_order o
+		      inner join t_evaluation e on e.order_code = o.order_code
+		      where  o.record_status = 0
+		      group by o.car_code
+		    ) t on t.car_code = c.car_code
+		    where c.status = 0 and c.record_status=0 and c.seat_number &gt;= #{population} and ROWNUM &lt; #{top}
+		) ct
+		left join t_price_rule pr1 on pr1.rule_value like '%'||#{startArea}||'%' and pr1.rule_type =1
+        left join t_price_rule pr2 on pr2.rule_type=2
+        left join t_price_rule pr3 on pr3.rule_type=3 and ( to_number(pr3.default_range) &lt; ct.seat_number and to_number(pr3.to_range) &gt;= ct.seat_number )
+        left join t_price_rule pr4 on pr4.rule_type=4 and ( to_number(pr4.default_range) &lt; ct.madeDate and to_number(pr4.to_range) &gt;= ct.madeDate )
+        left join t_price_rule pr5 on pr5.rule_type=5 and ( to_number(pr5.default_range) &lt; ceil(#{duration}/1000) and to_number(pr5.to_range) &gt;= ceil(#{duration}/1000) )
+        left join t_price_rule pr7 on pr7.rule_type=7
+        order by amount asc, ct.scores desc
+	</select>
+
+    <!--更新费用结算的订单-->
+    <update id="updateCreDitPay" parameterType="com.dhxx.facade.entity.order.Order">
+        update t_order t
+        <set>
+            t.payment_status='2'
+        </set>
+        where t.record_status = 0
+        <if test="id != null">
+            and t.id = #{id}
+        </if>
+        <if test="idList != null">
+            and t.status in
+            <foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="orderPlacer != null and orderPlacer != ''">
+            and t.order_placer = #{orderPlacer}
+        </if>
+        <if test="charterCode != null and charterCode != ''">
+            and t.charter_code = #{charterCode}
+        </if>
+        <if test="status != null and status != ''">
+            and t.status = #{status}
+        </if>
+        <if test="paymentStatus != null and paymentStatus != ''">
+            and t.payment_status = #{paymentStatus}
+        </if>
+
+    </update>
+
+
+    <select id="selectCount" parameterType="com.dhxx.facade.entity.order.Order" resultType="java.lang.Integer">
+        SELECT count(*) FROM t_order t
+        <where>
+            <if test="bigOrderCode != null and bigOrderCode != ''">
+                and t.big_order_code = #{bigOrderCode}
+            </if>
+        </where>
+    </select>
+
+    <!-- 退款情况表-->
+    <select id="refund" parameterType="com.dhxx.facade.entity.order.Order" resultMap="OrderMap">
+        select t.*, u.user_account, c.company_name,r.refund_status
+        from t_order t
+        left join t_user u on u.id = t.order_placer
+        left join t_company c on c.company_code = t.transporter_code
+        left join t_refund r on r.order_code = t.order_code
+        where t.record_status = 0
+        AND t.order_code IN (
+        SELECT
+        rr.order_code
+        FROM
+        t_refund rr
+        )
+        <if test="param != null and param != ''">
+            and (u.user_account like '%'||#{param}||'%' or t.order_code like '%'||#{param}||'%')
+        </if>
+        <if test="beginTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'dd') >= trunc(#{beginTime},'dd')
+ 			]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+ 			and trunc(t.boarding_time,'dd') <= trunc(#{endTime},'dd')
+ 			]]>
+        </if>
+        <if test="order != null and order != ''">
+            <if test="sortType != null and sortType != ''">
+                order by ${sortType} ${order}
+            </if>
+        </if>
+        <if test="order == null or order == ''">
+            order by t.create_date desc
+        </if>
+    </select>
+
+    <!-- 30分钟前发的信息-->
+    <select id="checkOrder" parameterType="com.dhxx.facade.entity.order.Order" resultMap="OrderMap">
+       SELECT t.* FROM T_ORDER t   where  STATUS ='5' and  ceil((to_date(t.BOARDING_TIME)-to_date(sysdate)) * 24 * 60) =30
+    </select>
+
+
+</mapper>

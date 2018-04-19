@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.rule.RuleMapper">
+
+    <select id="list" parameterType="com.dhxx.facade.entity.rule.Rule" resultType="com.dhxx.facade.entity.rule.Rule">
+        select
+        p.id,
+        p.rule_type ruleType,
+        p.rule_value ruleValue,
+        p.default_range defaultRange,
+        p.to_range toRange,
+        p.coefficient,
+        p.parent_id parentId,
+        p.company_code companyCode,
+        p.end_place endPlance
+        from t_price_rule p
+     <where>
+        <if test="ruleValue != null and '' != ruleValue">
+            and p.rule_value like '%'||#{ruleValue}||'%'
+        </if>
+        <if test="ruleType != null">
+            and p.rule_type = #{ruleType}
+        </if>
+        <if test="parentId != null">
+            and p.parent_id = #{parentId}
+        </if>
+        <if test="id != null">
+            and p.id = #{id}
+        </if>
+        <if test="companyCode != null and '' != companyCode">
+            and p.company_code = #{companyCode}
+        </if>
+        <if test="ruleTypeList != null and ''!= ruleTypeList">
+            and p.rule_type in
+            <foreach collection="list" index="index" item="ruleTypeList" open="(" separator="," close=")">
+                #{ruleTypeList}
+            </foreach>
+        </if>
+         <if test="timeDifference != null ">
+             and  #{timeDifference}  &gt;= p.default_range and #{timeDifference} &lt; p.to_range
+         </if>
+     </where>
+        order by p.id asc
+    </select>
+
+    <select id="listCompany" parameterType="com.dhxx.facade.entity.rule.Rule" resultType="com.dhxx.facade.entity.rule.Rule">
+        select
+        p.id,
+        p.rule_type ruleType,
+        p.rule_value ruleValue,
+        p.default_range defaultRange,
+        p.to_range toRange,
+        p.coefficient,
+        p.parent_id parentId,
+        p.company_code companyCode,
+        p.end_place endPlance,
+        c.type type,
+        c.company_name companyName
+        from t_price_rule p,
+        T_COMPANY c
+        <where>
+            p.company_code = C.COMPANY_CODE
+            <if test="ruleValue != null and '' != ruleValue">
+                and p.rule_value like '%'||#{ruleValue}||'%'
+            </if>
+            <if test="ruleType != null">
+                and p.rule_type = #{ruleType}
+            </if>
+            <if test="parentId != null">
+                and p.parent_id = #{parentId}
+            </if>
+            <if test="id != null">
+                and p.id = #{id}
+            </if>
+            <if test="companyCode != null and '' != companyCode">
+                and p.company_code = #{companyCode}
+            </if>
+            <if test="ruleTypeList != null and ''!= ruleTypeList">
+                and p.rule_type in
+                <foreach collection="list" index="index" item="ruleTypeList" open="(" separator="," close=")">
+                    #{ruleTypeList}
+                </foreach>
+            </if>
+            <if test="timeDifference != null and ''!= timeDifference">
+                 and #{timeDifference}  &gt;= p.default_range and #{timeDifference} &lt; p.to_range
+            </if>
+        </where>
+        order by p.id asc
+    </select>
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.rule.Rule">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select SEQ_PRICE_RULE.nextval as id from dual
+        </selectKey>
+        insert into t_price_rule p(
+        p.id,
+        p.rule_type,
+        p.rule_value,
+        p.default_range,
+        p.to_range,
+        p.coefficient,
+        p.parent_id,
+        p.company_code,
+        p.end_place
+        ) values(
+        #{id},
+        #{ruleType,jdbcType=VARCHAR},
+        #{ruleValue,jdbcType=VARCHAR},
+        #{defaultRange,jdbcType=VARCHAR},
+        #{toRange,jdbcType=VARCHAR},
+        #{coefficient,jdbcType=VARCHAR},
+        #{parentId,jdbcType=VARCHAR},
+        #{companyCode,jdbcType=VARCHAR},
+        #{endPlance,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.rule.Rule">
+        update t_price_rule p
+        <set>
+            <if test="coefficient != null">
+                p.coefficient = #{coefficient},
+            </if>
+            <if test="ruleValue != null and ruleValue != ''">
+                p.rule_value = #{ruleValue},
+            </if>
+            <if test="defaultRange != null and defaultRange != ''">
+                p.default_range = #{defaultRange},
+            </if>
+            <if test="toRange != null and toRange != ''">
+                p.to_range = #{toRange},
+            </if>
+            <if test="endPlance != null and endPlance != ''">
+                p.end_place = #{endPlance},
+            </if>
+            <if test="ruleType != null and ruleType != ''">
+                p.rule_type = #{ruleType},
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and p.id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <delete id="delete" parameterType="com.dhxx.facade.entity.rule.Rule">
+    	delete from t_price_rule
+    	where id = #{id}
+    </delete>
+
+</mapper>

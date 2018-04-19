@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.order.OrderTimeSetMapper">
+
+
+    <resultMap id="OrderTimeSetMap" type="java.util.Map">
+        <result column="before_set_time" property="beforesettime"/>
+        <result column="middle_set_time" property="middlesettime" />
+        <result column="after_set_time" property="aftersettime" />
+        <result column="order_not_set_start_time" property="ordernotsetStarttime" />
+        <result column="order_not_set_end_time" property="ordernotsetEndtime" />
+    </resultMap>
+
+
+    <update id="update" parameterType="com.dhxx.facade.entity.order.OrderTimeSet" >
+        UPDATE  t_order_set_time
+        set
+        before_set_time = #{beforesettime,jdbcType=INTEGER},
+        middle_set_time = #{middlesettime,jdbcType=INTEGER},
+        after_set_time  = #{aftersettime,jdbcType=INTEGER},
+        order_not_set_start_time = #{ordernotsetStarttime,jdbcType=VARCHAR},
+        order_not_set_end_time = #{ordernotsetEndtime,jdbcType=VARCHAR}
+    </update>
+
+
+    <select id="find" parameterType="com.dhxx.facade.entity.order.OrderTimeSet" resultMap="OrderTimeSetMap">
+        select * from  t_order_set_time where  rownum&lt;2
+    </select>
+
+</mapper>

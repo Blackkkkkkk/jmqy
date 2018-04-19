@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sync.service.mapper.oracle.rule.RouteDeviateMapper">
+
+    <resultMap id="map" type="java.util.Map">
+        <result column="route_deviate_value" property="routeDeviateValue"></result>
+        <result column="route_deviate_distance" property="routeDeviateDistance"></result>
+    </resultMap>
+
+    <select id="find" parameterType="com.sync.facade.entity.oracle.rule.RouteDeviate" resultMap="map">
+            <!-- 线路偏差值数据库只有一条数据，所以查询ID写死直接等于1-->
+            select   T.*  FROM T_ROUTE_DEVIATE T
+             WHERE
+                   T.ID = 1
+    </select>
+
+
+</mapper>

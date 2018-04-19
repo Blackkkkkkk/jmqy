@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd"
+	default-lazy-init="true">
+
+	<description>Shiro安全配置</description>
+	
+	<bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.MemorySessionDAO"/>
+	<bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+		<!-- 设置超时时间 -->
+    	<property name="globalSessionTimeout" value="7200000"/>
+		<property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionIdUrlRewritingEnabled" value="false" />
+	</bean>
+	
+	<!-- Shiro's main business-tier object for web-enabled applications -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="shiroDbRealm" />
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+
+	<!-- 項目自定义的Realm, 所有accountService依赖的dao都需要用depends-on声明 -->
+	<bean id="shiroDbRealm" class="com.dhxx.web.shiro.ShiroDbRealm" depends-on="">
+		<property name="userFacade" ref="userFacade"/>
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+
+ 	</bean>
+    <!--自定义密码匹配管理器-->
+	<bean id="credentialsMatcher" class="com.dhxx.web.shiro.CustomCredentialsMatcher">
+	</bean>
+
+
+	<!-- Shiro Filter -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="/index" />
+		<property name="successUrl" value="/" />
+		<property name="unauthorizedUrl" value="/index" />
+		<property name="filters">
+			<map>	
+				<entry key="roles">  
+                    <bean class="com.dhxx.web.shiro.AuthShiroFilter" />  
+                </entry>
+			</map>
+		</property>
+		<property name="filterChainDefinitions" value="#{authService.loadFilterChainDefinitions()}" />
+	</bean>
+
+	<!-- 用户授权信息Cache, 采用EhCache -->
+	<bean id="shiroEhcacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"/>
+	</bean>
+	
+	<!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+</beans>

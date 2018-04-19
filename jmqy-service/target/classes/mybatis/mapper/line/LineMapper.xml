@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.line.LineMapper">
+
+	<select id="list" parameterType="com.dhxx.facade.entity.line.Line" resultType="com.dhxx.facade.entity.line.Line">
+		select
+		l.id,	
+		l.start_point startPoint,
+		l.start_lng startLng,
+		l.start_lat startLat,
+		l.start_area startArea,
+		l.start_city startCity,
+		l.end_point endPoint,
+		l.end_lng endLng,
+		l.end_lat endLat,
+		l.end_area endArea,
+		l.end_city endCity,
+		l.via_point viaPoint,
+		l.times,
+		l.type,
+		l.create_user createUser,
+		l.create_company createCompany
+    	from t_line l
+		<where>
+		l.record_status = 0
+		<if test="id !=null">
+			and l.id = #{id} 
+		</if>
+		<if test="type !=null">
+			and l.type = #{type} 
+		</if>
+		<if test="createUser !=null and createUser != ''">
+			and l.create_user = #{createUser}
+		</if>
+		<if test="createCompany !=null and createCompany != ''">
+			and l.create_company = #{createCompany}
+		</if>
+		<if test="startPoint !=null and startPoint != ''">
+			and l.start_point = #{startPoint}
+		</if>
+		<if test="endPoint !=null and endPoint != ''">
+			and l.end_point = #{endPoint}
+		</if>
+		<if test="startArea !=null and startArea != ''">
+			and l.start_area = #{startArea}
+		</if>
+		<if test="endArea !=null and endArea != ''">
+			and l.end_area = #{endArea}
+		</if>
+		<if test="top !=null">
+			and ROWNUM &lt;= #{top}
+		</if>
+		</where>
+		order by l.update_date desc
+	</select>
+	
+	<update id="update"  parameterType="com.dhxx.facade.entity.line.Line">
+        update t_line l
+        <set>
+	        <if test="recordStatus != null">
+				l.record_status = #{recordStatus},
+			</if>
+        </set>
+        <where>
+         <if test="id != null">
+		 	and l.id = #{id}
+		</if>
+        </where>
+	</update>
+	
+	<insert id="saveOrUpdate" parameterType="com.dhxx.facade.entity.line.Line">
+		merge into t_line l using
+		(
+			select
+			#{startPoint,jdbcType=VARCHAR} startPoint,  
+			#{startLng,jdbcType=VARCHAR} startLng,  
+			#{startLat,jdbcType=VARCHAR} startLat,  
+			#{startArea,jdbcType=VARCHAR} startArea, 
+			#{startCity, jdbcType=VARCHAR} startCity,
+			#{endPoint,jdbcType=VARCHAR} endPoint,  
+			#{endLng,jdbcType=VARCHAR} endLng,  
+			#{endLat,jdbcType=VARCHAR} endLat,  
+			#{endArea,jdbcType=VARCHAR} endArea,  
+			#{endCity, jdbcType=VARCHAR} endCity,
+			#{viaPoint,jdbcType=VARCHAR} viaPoint,
+			#{type,jdbcType=VARCHAR} type,  
+		    #{createUser,jdbcType=VARCHAR} createUser,  
+		    #{createCompany,jdbcType=VARCHAR} createCompany,  
+		    #{remark,jdbcType=VARCHAR} remark
+			from dual
+		)tmp on (
+			l.create_user = tmp.createUser 
+			and l.type = tmp.type 
+			and tmp.startPoint = l.start_point 
+			and tmp.endPoint = l.end_point
+			and tmp.startArea = l.start_area 
+			and tmp.endArea = l.end_area
+		)
+		
+		when matched then
+		
+		update set
+		l.update_date = sysdate,
+		l.times = l.times+1
+		
+		
+		when not matched then
+		
+		insert(
+			l.id,	
+			l.start_point,
+			l.start_lng,
+			l.start_lat,
+			l.start_area,
+			l.start_city,
+			l.end_point,
+			l.end_lng,
+			l.end_lat,
+			l.end_area,
+			l.end_city,
+			l.via_point,
+			l.type,
+		    l.create_user,
+		    l.create_company,
+		    l.create_date,
+		    l.update_date,
+		    l.remark
+		    )
+		values(
+			seq_line.nextval, 
+			tmp.startPoint,
+			tmp.startLng,
+			tmp.startLat,
+			tmp.startArea,
+			tmp.startCity,
+			tmp.endPoint,
+			tmp.endLng,
+			tmp.endLat,
+			tmp.endArea,
+			tmp.endCity,
+			tmp.viaPoint,
+			tmp.type,
+		    tmp.createUser,
+		    tmp.createCompany,
+		    sysdate,
+		    sysdate,
+		    tmp.remark
+		)
+
+	</insert>
+	
+	
+	<insert id="save" parameterType="com.dhxx.facade.entity.line.Line">
+	
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+         	 select seq_line.nextval as id from dual
+        </selectKey>
+		
+		insert into t_line l(
+			l.id,	
+			l.start_point,
+			l.start_lng,
+			l.start_lat,
+			l.start_area,
+			l.start_city,
+			l.end_point,
+			l.end_lng,
+			l.end_lat,
+			l.end_area,
+			l.end_city,
+			l.via_point,
+		    l.record_status,
+		    l.create_user,
+		    l.create_company,
+		    l.create_date,
+		    l.update_date,
+		    l.remark
+		    )
+		values(
+			#{id},  
+			#{startPoint,jdbcType=VARCHAR},  
+			#{startLng,jdbcType=VARCHAR},  
+			#{startLat,jdbcType=VARCHAR},  
+			#{startArea,jdbcType=VARCHAR},  
+			#{startCity,jdbcType=VARCHAR},
+			#{endPoint,jdbcType=VARCHAR},  
+			#{endLng,jdbcType=VARCHAR},  
+			#{endLat,jdbcType=VARCHAR},  
+			#{endArea,jdbcType=VARCHAR},
+			#{endCity,jdbcType=VARCHAR},    
+			#{viaPoint,jdbcType=VARCHAR},  
+		    0,
+		    #{createUser,jdbcType=VARCHAR},  
+		    #{createCompany,jdbcType=VARCHAR},  
+		    sysdate,
+		    sysdate,
+		    #{remark,jdbcType=VARCHAR}
+		)
+
+	</insert>
+
+</mapper>

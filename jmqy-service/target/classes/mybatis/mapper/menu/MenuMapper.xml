@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.menu.MenuMapper">
+
+	<resultMap id="menuMap" type="com.dhxx.facade.entity.menu.Menu">
+		<id property="id" column="id" />
+		<result property="menuItem" column="menuItem" />
+		<result property="menuPath" column="menuPath" />
+		<result property="parentId" column="parentId" />
+		<result property="remark" column="remark" />
+		<collection property="childMenus" column="id" javaType="java.util.List" ofType="com.dhxx.facade.entity.menu.Menu" select="selectChildMenus"/>
+	</resultMap>
+	
+	<select id="findMenus" resultMap="menuMap">
+		select id, menu_item menuItem, menu_path menuPath, parent_id parentId
+    	from t_menu where parent_id = 0 and status = 0
+
+        <if test="remark != null and remark != ''">
+            and remark like #{remark}||'%'
+        </if>
+         <if test="remarks != null and remarks != ''">
+            and remark = #{remarks}
+        </if>
+    	order by sort asc
+	</select>
+	
+	<select id="findMenuIds" resultType="java.lang.String">
+		select wm_concat(m.id) ids
+		from t_menu m 
+		where m.remark = 'charter'
+		group by m.remark
+	</select>
+
+    <select id="selectChildMenus" parameterType="java.lang.Long" resultType="com.dhxx.facade.entity.menu.Menu">
+        select id, menu_item menuItem, menu_path menuPath, parent_id parentId
+        from t_menu where parent_id = #{id} and status = 0
+        and id not in(48,49,50)
+        order by sort asc
+    </select>
+
+    <resultMap id="leftMenuMap" type="com.dhxx.facade.entity.menu.Menu">
+        <id property="id" column="id" />
+        <result property="menuItem" column="menuItem" />
+        <result property="menuPath" column="menuPath" />
+        <result property="parentId" column="parentId" />
+        <result property="remark" column="remark" />
+        <collection property="childMenus" column="{id=id,roleId=roleId}" javaType="java.util.List" ofType="com.dhxx.facade.entity.menu.Menu" select="selectLeftChildMenus"/>
+    </resultMap>
+
+    <select id="leftMenus" resultMap="leftMenuMap">
+        select DISTINCT m.id, m.menu_item menuItem, m.menu_path menuPath, m.parent_id parentId, #{roleId,jdbcType=INTEGER} roleId,M . SORT
+        from t_menu m
+        inner join t_permission p on p.menu_id = m.id
+        where m.parent_id = 0 and m.status = 0
+        <if test="roleId != null">
+            and p.role_id = #{roleId}
+        </if>
+        <if test="companyid !=null">
+            AND P .COMPANY_ID=#{companyid}
+        </if>
+        order by m.sort asc
+    </select>
+	
+	<select id="selectLeftChildMenus" parameterType="java.util.Map" resultType="com.dhxx.facade.entity.menu.Menu">
+    	select DISTINCT m.id, m.menu_item menuItem, m.menu_path menuPath, m.parent_id parentId ,m . SORT
+    	from t_menu m
+    	inner join t_permission p on p.menu_id = m.id
+    	where m.parent_id = #{id} and m.status = 0 and p.role_id = #{roleId}
+    	order by m.sort asc
+    </select>
+
+    <select id="haveMenus" parameterType="java.lang.Long" resultType="com.dhxx.facade.entity.menu.Menu">
+        select DISTINCT p.menu_id from t_permission p
+        where 1=1
+        <if test="roleId != null">
+            and p.role_id = #{roleId,jdbcType=INTEGER}
+        </if>
+    </select>
+    
+</mapper>

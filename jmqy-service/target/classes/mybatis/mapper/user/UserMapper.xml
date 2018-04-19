@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.user.UserMapper">
+
+	<resultMap id="UserMap" type="com.dhxx.facade.entity.user.User">
+		<id column="id" property="id"/>
+		<result column="user_account" property="userAccount"/>
+	    <result column="user_name" property="userName"/>
+	    <result column="user_password" property="userPassword"/>
+	    <result column="salt" property="salt"/>
+	    <result column="phone" property="phone"/>
+	    <result column="role" property="role"/>
+	    <result column="roleName" property="roleName"/>
+	    <result column="roleStatus" property="roleStatus"/>
+	    <result column="id_card" property="idCard"/>
+	    <result column="status" property="status"/>
+	    <result column="sex" property="sex"/>
+	    <result column="type" property="type"/>
+	    <result column="register_date" property="registerDate"/>
+	    <result column="companyId" property="companyId"/>
+	    <result column="company_code" property="companyCode"/>
+	    <result column="companyName" property="companyName"/>
+	    <result column="companyType" property="companyType"/>
+		<result column="companyType" property="companyType"/>
+	</resultMap>
+
+	<select id="find" parameterType="com.dhxx.facade.entity.user.User" resultMap="UserMap">
+		select 
+		u.*,
+	    r.role_name roleName,
+	    r.status roleStatus,
+	    c.id companyId,
+	    c.company_name companyName,
+	    c.type companyType
+		from t_user u
+		left join t_role r on r.id = u.role
+		left join t_company c on c.company_code = u.company_code
+		<where>
+		<if test="status != null">
+ 			and u.status = #{status}
+ 		</if>
+ 		<if test="id != null">
+ 			and u.id = #{id} 
+ 		</if>
+ 		<if test="userAccount != null and userAccount != ''">
+ 			and (u.user_account = #{userAccount} or u.phone = #{userAccount})
+ 		</if>
+ 		<if test="phone != null and phone != ''">
+ 			and u.phone = #{phone}
+ 		</if>
+ 		<if test="userName != null and userName != ''">
+ 			and u.user_name like '%'||#{userName}||'%'
+ 		</if>
+ 		<if test="roleName != null and roleName != ''">
+ 			and r.role_name like #{roleName}||'%'
+ 		</if>
+ 		<if test="companyId != null">
+ 			and c.id =  #{companyId}
+ 		</if>
+ 		<if test="companyCode != null and companyCode != ''">
+ 			and u.company_code =  #{companyCode}
+ 		</if>
+ 		<if test="type != null">
+ 			and u.type = #{type}
+ 		</if>
+ 		</where>
+ 		<if test="order != null and order != ''">
+	        <if test="sortType != null and sortType != ''">
+	 			order by ${sortType} ${order}
+	 		</if>
+ 		</if>
+	</select>
+
+	<insert id="save" parameterType="com.dhxx.facade.entity.user.User">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+         	 select seq_user.nextval as id from dual
+        </selectKey>
+		insert into t_user(
+				id,
+				user_code,
+				user_account,
+				user_name,
+				user_password, 
+				salt, 
+				phone, 
+				company_code,
+				role,
+				id_card, 
+				status,
+                email,
+				sex,
+                type,
+				register_date
+				)  
+		values(
+				#{id},
+                concat(#{userCode,jdbcType=VARCHAR},lpad(#{id}, 10, '0')),
+				#{userAccount,jdbcType=VARCHAR},
+				#{userName,jdbcType=VARCHAR},
+				#{userPassword,jdbcType=VARCHAR}, 
+				#{salt,jdbcType=VARCHAR},
+				#{phone,jdbcType=VARCHAR},
+				#{companyCode,jdbcType=VARCHAR},
+				#{role,jdbcType=VARCHAR},
+				#{idCard,jdbcType=VARCHAR},
+				#{status,jdbcType=VARCHAR},
+				#{email,jdbcType=INTEGER},
+				#{sex,jdbcType=INTEGER},
+				#{type,jdbcType=INTEGER},
+				#{registerDate,jdbcType=VARCHAR}
+			   )
+	</insert>
+	
+	<update id="update" parameterType="com.dhxx.facade.entity.user.User">
+		update t_user u
+		<set>
+			<if test="userName != null and userName != ''">
+				u.user_name = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="userPassword != null and userPassword != ''">
+				u.user_password = #{userPassword,jdbcType=VARCHAR},
+			</if>
+			<if test="salt != null and salt != ''">
+				u.salt = #{salt,jdbcType=VARCHAR},
+			</if>
+			<if test="role != null and role != ''">
+				u.role = #{role,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null and phone != ''">
+				u.phone = #{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="idCard != null and idCard != ''">
+				u.id_card = #{idCard,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				u.status=#{status},
+			</if>
+			<if test="sex != null">
+				u.sex=#{sex},
+			</if>
+		</set> 
+        where 1 = 1
+        <if test="id != null">
+ 			and u.id = #{id} 
+ 		</if>
+ 		<if test="userAccount != null and userAccount != ''">
+ 			and u.user_account = #{userAccount}
+ 		</if>
+		<if test="companyCode != null and companyCode != ''">
+			and u.company_code = #{companyCode}
+		</if>
+	</update>
+	
+	<delete id="delete" parameterType="com.dhxx.facade.entity.user.User"> 
+		delete from t_user 
+		where id = #{id} 
+	</delete>
+
+	<select id="wechatfind" resultType="String">
+          SELECT u.user_account FROM t_user u WHERE  u.user_account = #{userAccount}
+	</select>
+
+</mapper>

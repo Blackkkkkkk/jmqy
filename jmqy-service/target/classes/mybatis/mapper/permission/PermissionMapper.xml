@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.permission.PermissionMapper">
+
+    <resultMap id="permissionMap" type="com.dhxx.facade.entity.permission.Permission">
+        <id property="menuId" column="menuId"/>
+        <result property="menuName" column="menuName"/>
+        <collection property="childs" column="menuId" javaType="java.util.List"
+                    ofType="com.dhxx.facade.entity.permission.Permission" select="selectChilds"/>
+    </resultMap>
+
+    <select id="list" resultMap="permissionMap">
+        select id menuId, menu_item menuName
+        from t_menu where parent_id = 0
+        order by sort asc
+    </select>
+
+    <select id="selectChilds" parameterType="java.lang.Long" resultType="com.dhxx.facade.entity.permission.Permission">
+        select m.id menuId, m.menu_item menuName, m.path, group_concat(r.role_name) roles
+        from t_menu m
+        left join t_permission p on p.menu_id = m.id
+        left join t_role r on r.id = p.role_id
+        where m.parent_id = #{menuId}
+        group by m.id, m.menu_item, m.path
+    </select>
+
+    <select id="menuIds" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select t.menu_id from t_permission t where t.role_id = #{roleId}
+    </select>
+
+    <resultMap id="authInfoMap" type="com.dhxx.facade.entity.permission.AuthInfo">
+        <id property="menuId" column="menuId"/>
+        <id property="menuUrl" column="menuUrl"/>
+        <collection property="roleList" column="menuId" javaType="java.util.List" ofType="java.lang.String"
+                    select="selectRoles"/>
+    </resultMap>
+
+    <select id="authInfo" resultType="com.dhxx.facade.entity.permission.AuthInfo">
+        select p.menu_id menuId, m.menu_item menuItem, m.path menuUrl, m.parent_id parentId, m.pic, group_concat(r.role_name) roles
+        from t_permission p
+        left join t_menu m on m.id = p.menu_id
+        left join t_role r on r.id = p.role_id
+        where m.menu_item is not null and m.menu_item != ''
+        and r.id is not null
+        group by p.menu_id, m.path
+        order by m.sort asc
+    </select>
+
+    <select id="selectRoles" parameterType="java.lang.Long" resultType="java.lang.String">
+        select r.role_name
+        from t_permission p
+        left join t_role r on r.id = p.role_id
+        where p.menu_id = #{menuId}
+        group by r.role_name
+    </select>
+
+    <select id="all" resultType="com.dhxx.facade.entity.permission.Permission">
+        select m.menu_item menuName, m.path, group_concat(r.role_name) roles
+        from t_permission p
+        left join t_menu m on m.id = p.menu_id
+        left join t_role r on r.id = p.role_id
+        where 1 = 1
+        group by m.id, m.menu_item, m.path
+    </select>
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.permission.Permission">
+        insert into t_permission (menu_id, role_id, company_id)
+        select a.* from(
+        <foreach collection="idList" index="index" item="id" separator="union all">
+            select #{id}, #{roleId}, #{companyId}
+            from dual
+        </foreach>
+        ) a
+    </insert>
+
+    <delete id="delete" parameterType="com.dhxx.facade.entity.permission.Permission">
+        delete from t_permission where
+        1=1
+        <choose>
+            <when test="companyId != null and companyId != '' and roleId != null">
+                and company_id = #{companyId} and role_id = ${roleId}
+            </when>
+            <otherwise>
+                and company_id = #{companyId}
+            </otherwise>
+        </choose>
+    </delete>
+
+    <delete id="deleteByRoleId" parameterType="com.dhxx.facade.entity.permission.Permission">
+        delete from t_permission where role_id = #{roleId}
+    </delete>
+
+    <select id="userper" parameterType="com.dhxx.facade.entity.user.Userper"
+            resultType="com.dhxx.facade.entity.user.Userper">
+        select u.id id,
+        u.role roleId,
+        u.user_code userCode,
+        u.user_account userAccount,
+        u.user_name userName,
+        u.phone userPhone,
+        u.status userStatus,
+        decode(p.coefficient,null,0,p.coefficient) coefficient,
+        c.register_date registerDate,
+        c.type companyType,
+        c.id companyId,
+        c.company_address address,
+        c.company_code companyCode,
+        c.company_name companyName,
+        c.status companyStatus,
+        c.remark
+        from t_user u
+        left join t_company c on c.company_code = u.company_code
+        left join t_role r on r.id = u.role
+        left join t_price_rule p on p.company_code = u.company_code and p.rule_type = '9'
+        where (u.type = 1 or r.role_name like 'sys%') and r.role_name != 'sys_admin'
+        <if test="param != null and param != ''">
+            and (c.company_name like '%'||#{param}||'%' or u.user_account like '%'||#{param}||'%')
+        </if>
+        <if test="companyType != null">
+            and c.type = #{companyType}
+        </if>
+        <if test="companyType != null and companyType ==1">
+            order by c.register_date desc
+            ,u.user_account ASC
+
+        </if>
+        <if test="companyType != null and (companyType ==2 or companyType ==3) ">
+            order by c.register_date desc
+            ,c.company_name ASC
+        </if>
+
+
+    </select>
+
+    <select id="findUser" parameterType="com.dhxx.facade.entity.user.Userper"
+            resultType="com.dhxx.facade.entity.user.User">
+        select u.id id,
+            u.role roleId,
+            u.user_code userCode,
+            u.user_account userAccount,
+            u.user_name userName,
+            u.phone phone,
+            u.sex,
+            u.id_card idCard,
+            u.email,
+            u.register_date registerDate,
+            r.role_name roleName,
+            c.type companyType,
+            c.id companyId,
+            c.company_name companyName,
+            c.company_address address,
+            c.status companyStatus,
+            c.remark
+        from t_user u
+        left join t_company c on c.company_code = u.company_code
+        left join t_role r on r.id = u.role
+        where u.id = #{id}
+    </select>
+
+    <update id="examineUser" parameterType="com.dhxx.facade.entity.user.Userper">
+        update t_user u
+        <set>
+            <if test="companyStatus != null">u.status = #{companyStatus},</if>
+        </set>
+        where u.id = #{id}
+    </update>
+
+    <update id="examineCompany" parameterType="com.dhxx.facade.entity.user.Userper">
+        update t_company c
+        <set>
+            <if test="companyStatus != null">c.status = #{companyStatus},</if>
+            <if test="companyType != null">c.type = #{companyType},</if>
+        </set>
+        where c.id = #{companyId}
+    </update>
+
+    <select id="find" parameterType="com.dhxx.facade.entity.permission.Permission"
+            resultType="com.dhxx.facade.entity.permission.Permission">
+
+        SELECT
+        t.company_id companyId,
+        t.menu_id  menuId,
+        t.role_id roleId
+        FROM t_permission t where 1=1
+        <if test="companyId != null and companyId !=''">
+            and t.company_id = #{companyId}
+        </if>
+        <if test="menuId != null and menuId !=''">
+            and t.menu_id = #{menuId}
+        </if>
+        <if test="roleId != null and roleId !=''">
+            and t.role_id = #{roleId}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.refund.RefundMapper">
+
+    <resultMap id="list" type="com.dhxx.facade.entity.refund.Refund">
+        <result column="id" property="id"></result>
+        <result column="company_code" property="companyCode"></result>
+        <result column="user_account" property="userAccount" ></result>
+        <result column="order_code" property="orderCode"></result>
+        <result column="refund_code" property="refundCode"></result>
+        <result column="refund_apply_time" property="refundApplyTime"></result>
+        <result column="refund_reality_time" property="refundRealityTime"></result>
+        <result column="refund_status" property="refundStatus"></result>
+        <result column="update_status" property="updateStatus"></result>
+        <result column="coefficient" property="coefficient"></result>
+        <result column="refund_money" property="refundMoney"></result>
+        <result column="refund_reality_money" property="refundRealityMoney"></result>
+        <result column="user_id" property="userId"></result>
+        <result column="pay_type" property="payType"></result>
+    </resultMap>
+
+
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.refund.Refund">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select refund.nextval as id from dual
+        </selectKey>
+
+        insert into t_refund
+        (
+        id,
+        company_code,
+        user_account,
+        order_code,
+        refund_code,
+        refund_apply_time,
+        refund_reality_time,
+        refund_status,
+        update_status,
+        coefficient,
+        refund_money,
+        refund_reality_money,
+        user_id,
+        pay_type
+        )
+        values(
+        #{id},
+        #{companyCode, jdbcType=VARCHAR},
+        #{userAccount, jdbcType=VARCHAR},
+        #{orderCode, jdbcType=VARCHAR},
+        #{refundCode, jdbcType=VARCHAR},
+        #{refundApplyTime, jdbcType=TIMESTAMP},
+        #{refundRealityTime, jdbcType=TIMESTAMP},
+        #{refundStatus, jdbcType=VARCHAR},
+        #{updateStatus, jdbcType=VARCHAR},
+        #{refundMoney, jdbcType=VARCHAR},
+        #{refundRealityMoney, jdbcType=VARCHAR},
+        #{coefficient, jdbcType=VARCHAR},
+        #{userId, jdbcType=VARCHAR},
+        #{payType, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.refund.Refund">
+        UPDATE   t_refund t
+        <set>
+            <if test="id != null and id != ''">
+                t.id =#{id},
+            </if>
+            <if test="companyCode != null and companyCode != ''">
+                t.company_code =#{companyCode},
+            </if>
+            <if test="userAccount != null and userAccount != ''">
+                t.user_account =#{userAccount},
+            </if>
+            <if test="orderCode != null and orderCode != ''">
+                t.order_code =#{orderCode},
+            </if>
+            <if test="refundCode != null and refundCode != ''">
+                t.refund_code =#{refundCode},
+            </if>
+            <if test="refundApplyTime != null and refundApplyTime != ''">
+                t.refund_apply_time =#{refundApplyTime},
+            </if>
+            <if test="refundRealityTime != null and refundRealityTime != ''">
+                t.refund_reality_time =#{refundRealityTime},
+            </if>
+            <if test="refundStatus != null and refundStatus != ''">
+                t.refund_status =#{refundStatus},
+            </if>
+            <if test="updateStatus != null and updateStatus != ''">
+                t.update_status =#{updateStatus},
+            </if>
+            <if test="refundMoney != null and refundMoney != ''">
+                t.refund_money =#{refund_money},
+            </if>
+            <if test="refundRealityMoney != null and refundRealityMoney != ''">
+                t.refund_reality_money =#{refundRealityMoney},
+            </if>
+            <if test="coefficient != null and coefficient != ''">
+                t.coefficient =#{coefficient},
+            </if>
+            <if test="userId != null and userId != ''">
+                t.user_id =#{userId},
+            </if>
+            <if test="payType != null and payType != ''">
+                t.pay_type =#{payType},
+            </if>
+        </set>
+        WHERE  1 = 1
+        <if test="orderCode != null and orderCode != ''">
+           and  t.order_code =#{orderCode}
+        </if>
+
+
+    </update>
+
+   <select id="list" parameterType="com.dhxx.facade.entity.refund.Refund" resultMap="list">
+       SELECT * FROM  t_refund t
+       <where>
+           <if test="id != null and id != ''">
+               AND t.id =#{id}
+           </if>
+           <if test="companyCode != null and companyCode != ''">
+               AND t.company_code =#{companyCode}
+           </if>
+           <if test="userAccount != null and userAccount != ''">
+               AND t.user_account =#{userAccount}
+           </if>
+           <if test="orderCode != null and orderCode != ''">
+               AND t.order_code =#{orderCode}
+           </if>
+           <if test="refundCode != null and refundCode != ''">
+               AND t.refund_code =#{refundCode}
+           </if>
+           <if test="refundApplyTime != null and refundApplyTime != ''">
+               AND t.refund_apply_time =#{refundApplyTime}
+           </if>
+           <if test="refundRealityTime != null and refundRealityTime != ''">
+               AND t.refund_reality_time =#{refundRealityTime}
+           </if>
+           <if test="refundStatus != null and refundStatus != ''">
+               AND t.refund_status =#{refundStatus}
+           </if>
+           <if test="updateStatus != null and updateStatus != ''">
+               AND t.update_status =#{updateStatus}
+           </if>
+           <if test="refundMoney != null and refundMoney != ''">
+               AND t.refund_money =#{refund_money}
+           </if>
+           <if test="refundRealityMoney != null and refundRealityMoney != ''">
+               AND t.refund_reality_money =#{refundRealityMoney}
+           </if>
+           <if test="coefficient != null and coefficient != ''">
+               AND t.coefficient =#{coefficient}
+           </if>
+           <if test="userId != null and userId != ''">
+               AND t.user_id =#{userId}
+           </if>
+       </where>
+   </select>
+
+</mapper>

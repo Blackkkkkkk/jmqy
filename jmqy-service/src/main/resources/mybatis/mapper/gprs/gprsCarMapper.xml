@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.gprs.GprsMapper">
+
+    <resultMap id="map" type="java.util.Map">
+        <result column="ID" property="id"></result>
+        <result column="ORDER_CODE" property="orderCode"></result>
+        <result column="LONG_LAT" property="longLat" javaType="String" jdbcType="VARBINARY"></result>
+        <result column="LONG_LAT_PLAN" property="longLatPlan" javaType="String" jdbcType="VARBINARY"></result>
+        <result column="DEVIATION" property="deviation"></result>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.gprs.GprsCar" >
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select T_GPRSTABLE.nextval as id from dual
+        </selectKey>
+        INSERT INTO T_GPRS_TABLE(
+        ID,
+        ORDER_CODE,
+        LONG_LAT,
+        LONG_LAT_PLAN,
+        DEVIATION
+        ) VALUES(
+        #{id},
+        #{orderCode,jdbcType=VARCHAR},
+        #{longLat,jdbcType=CLOB},
+        #{longLatPlan,jdbcType=CLOB},
+        #{deviation,jdbcType=VARCHAR}
+        )
+    </insert>
+
+
+    <select id="find" parameterType="com.dhxx.facade.entity.gprs.GprsCar" resultMap="map">
+        SELECT * FROM T_GPRS_TABLE
+        WHERE  1=1
+        <if test="orderCode !=null and orderCode != ''">
+            AND ORDER_CODE=#{orderCode}
+        </if>
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+    </select>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.gprs.GprsCar">
+        UPDATE  T_GPRS_TABLE
+        <set>
+            <if test="longLat != null and longLat != ''">
+                LONG_LAT = #{longLat},
+            </if>
+            <if test="longLatPlan !=null and longLatPlan != ''">
+                LONG_LAT_PLAN = #{longLatPlan},
+            </if>
+            <if test="deviation != null and deviation != ''">
+                DEVIATION = #{deviation},
+            </if>
+        </set>
+       WHERE
+        ORDER_CODE=#{orderCode}
+    </update>
+</mapper>

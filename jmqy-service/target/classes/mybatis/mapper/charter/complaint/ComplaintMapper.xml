@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.charter.complaint.ComplaintMapper">
+	
+	<insert id="save" parameterType="com.dhxx.facade.entity.charter.complaint.Complaint" useGeneratedKeys="true" keyProperty="id">
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+         	 select seq_user.nextval as id from dual
+        </selectKey>
+			insert into t_complaint (
+				id,
+				user_id,
+ 				order_code,
+ 				to_complaint_content,
+  				create_time,
+  				remark
+			) values(
+				#{id}, 
+				#{userId,jdbcType=INTEGER}, 
+				#{orderCode,jdbcType=VARCHAR}, 
+				#{toComplaintContent,jdbcType=VARCHAR},
+				#{createTime,jdbcType=TIMESTAMP},
+				#{remark,jdbcType=VARCHAR}
+		   )  
+	</insert>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.charter.complaint.Complaint" resultType="com.dhxx.facade.entity.charter.complaint.Complaint">
+        select
+        	t.id,
+            t.user_id userId,
+            t.order_code orderCode,
+            t.to_complaint_content toComplaintContent,
+            t.create_time createTime,
+            case
+            when o.order_placer = t.user_id then decode(o.order_receiver,null,o.transporter_code,o.order_receiver) else o.order_placer end complaintId,
+            o.id orderId,
+            c1.company_name charterCompany,
+            c2.company_name transportCompany,
+            u3.user_name complainant,
+            t.reply_content replyContent,
+            o.car_num carNum,
+			d.name driverName,
+			d.job_num jobNum
+        from t_complaint t
+        left join t_order o on o.order_code = t.order_code
+        left join t_user u1 on u1.id = o.order_placer
+        left join t_company c1 on c1.company_code = u1.company_code
+        left join t_user u2 on u2.id = o.order_receiver
+        left join t_company c2 on c2.company_code = u2.company_code
+        left join t_user u3 on u3.id = t.user_id
+        left join t_driver d on d.code = o.driver_code
+        <where>
+         <if test="id != null ">
+            and t.id = #{id}
+         </if>
+         <if test="orderCode != null and orderCode != ''">
+            and t.order_code = #{orderCode}
+         </if>
+		 <if test="param != null and param != ''">
+
+			 <!--<choose>-->
+				 <!--<when test="searchType == '0'.toString()">-->
+					 <!--and t.order_code like '%'||#{param}||'%'-->
+				 <!--</when>-->
+				 <!--<otherwise>-->
+					 <!--and c1.company_name like '%'||#{param}||'%'-->
+				 <!--</otherwise>-->
+			 <!--</choose>-->
+
+
+			<choose>
+				<when test="searchType == '0'.toString()">
+					and t.order_code like '%'||#{param}||'%'
+				</when>
+				<when test="searchType == '1'.toString()">
+					and c1.company_name like '%'||#{param}||'%'
+				</when>
+				<when test="searchType == '2'.toString()">
+					and c2.company_name like '%'||#{param}||'%'
+				</when>
+				<when test="searchType == '3'.toString()">
+					and u3.user_name like '%'||#{param}||'%'
+				</when>
+				<when test="searchType == '4'.toString()">
+					and t.to_complaint_content like '%'||#{param}||'%'
+				</when>
+				<otherwise>
+
+				</otherwise>
+			</choose>
+		 </if>
+         <if test="transporterCode != null and transporterCode != ''">
+            and o.transporter_code = #{transporterCode}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+ 			<![CDATA[
+ 			and t.create_time >= to_date(#{beginTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+ 		</if>
+ 		<if test="endTime != null and endTime != ''">
+ 			<![CDATA[
+ 			and t.create_time <= to_date(#{endTime},  'yyyy-MM-dd HH24:mi:ss')
+ 			]]>
+ 		</if>
+        </where>
+        <if test="order != null and order != ''">
+	        <if test="sortType != null and sortType != ''">
+	 			order by ${sortType} ${order},t.order_code asc ,c1.company_name asc ,c2.company_name asc
+	 		</if>
+ 		</if>
+		<if test="order == null or order == ''">
+			order by t.order_code asc ,c1.company_name asc ,c2.company_name asc
+		</if>
+    </select>
+    
+    <update id="update" parameterType="com.dhxx.facade.entity.charter.complaint.Complaint">
+		update t_complaint t 
+		<set>
+			<if test="replyContent != null and replyContent != ''">	
+  				t.reply_content = #{replyContent},
+  				t.reply_user_id = #{replyUserId},
+  				t.reply_time = sysdate,
+  			</if>	
+		</set> 
+        <where>
+	        <if test="id != null">
+	 			and t.id = #{id} 
+	 		</if>
+	 		<if test="orderCode != null and orderCode != ''">
+	 			and t.order_code = #{orderCode} 
+	 		</if>
+ 		</where>
+	</update>
+
+</mapper>

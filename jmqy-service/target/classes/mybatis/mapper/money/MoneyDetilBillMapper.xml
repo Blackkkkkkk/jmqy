@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhxx.service.mapper.money.MoneyDetilBillMapper">
+
+    <resultMap id="map" type="com.dhxx.facade.entity.money.MoneyDetilBill">
+        <result column="user_id" property="userId"></result>
+        <result column="create_date" property="createDate"></result>
+        <result column="money_before" property="moneyBefore"></result>
+        <result column="money" property="money"></result>
+        <result column="money_after" property="moneyAfter"></result>
+        <result column="balance" property="balance"></result>
+        <result column="company_code" property="companyCode"></result>
+        <result column="user_account" property="userAccount"></result>
+        <result column="type" property="type"></result>
+        <result column="pay_mode" property="payMode"></result>
+        <result column="big_order_code" property="bigOrderCode"/>
+    </resultMap>
+
+    <select id="findOne" parameterType="com.dhxx.facade.entity.money.MoneyDetilBill" resultMap="map">
+        SELECT * FROM t_money_detilbill t
+        where
+        1=1
+        <if test="id!=null and id !=''">
+            and t.id = #{id}
+        </if>
+        <if test="bigOrderCode != null and bigOrderCode != ''">
+            and t.big_order_code = #{bigOrderCode}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.dhxx.facade.entity.money.MoneyDetilBill">
+        <selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="id">
+            select T_MONEY_DETILBILL_key.nextval as id from dual
+        </selectKey>
+        insert into t_money_detilbill
+        (
+        id,
+        user_id,
+        create_date,
+        money_before,
+        money,
+        money_after,
+        company_code,
+        balance,
+        type,
+        pay_mode,
+        big_order_code
+        )
+        values(
+        #{id},
+        #{userId,jdbcType=INTEGER},
+        #{createDate, jdbcType=TIMESTAMP},
+        #{moneyBefore, jdbcType=VARCHAR},
+        #{money, jdbcType=VARCHAR},
+        #{moneyAfter, jdbcType=VARCHAR},
+        #{companyCode, jdbcType=VARCHAR},
+        #{balance, jdbcType=VARCHAR},
+        #{type, jdbcType=VARCHAR},
+        #{payMode, jdbcType=VARCHAR},
+        #{bigOrderCode,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.dhxx.facade.entity.money.MoneyDetilBill">
+        update t_money_detilbill t
+        <set>
+            <if test="createDate !=null and createDate !=''">
+                t.create_date = #{createDate}
+            </if>
+            <if test="moneyBefore !=null and moneyBefore !=''">
+                t.money_before=#{moneyBefore}
+            </if>
+            <if test="money !=null and money !=''">
+                t.money = #{money}
+            </if>
+            <if test="moneyAfter !=null and moneyAfter !=''">
+                t.money_after = #{moneyAfter}
+            </if>
+            <if test="companyCode !=null and companyCode !=''">
+                t.company_code = #{companyCode}
+            </if>
+            <if test="balance !=null and balance !=''">
+                t.balance = #{balance}
+            </if>
+            <if test=" type !=null and type !=''">
+                and t.type = #{type}
+            </if>
+            <if test=" payMode !=null and payMode !=''">
+                and t.pay_mode = #{payMode}
+            </if>
+            <if test="bigOrderCode != null and bigOrderCode != ''">
+                and t.big_order_code = #{bigOrderCode}
+            </if>
+        </set>
+        where 1 = 1 and t.user_id = #{userId}
+    </update>
+
+    <select id="list" parameterType="com.dhxx.facade.entity.money.MoneyDetilBill" resultMap="map">
+        SELECT t.*,u.USER_ACCOUNT FROM t_money_detilbill T,t_user U
+        where
+        1=1
+        and t.USER_ID = u.id
+        <if test=" userId !=null and userId !=''">
+            and t.user_id = #{userId}
+        </if>
+        <if test=" companyCode !=null and companyCode !=''">
+            and t.company_code = #{companyCode}
+        </if>
+        <if test=" type !=null and type !=''">
+            and t.type = #{type}
+        </if>
+        <if test="bigOrderCode != null and bigOrderCode != ''">
+            and t.big_order_code = #{bigOrderCode}
+        </if>
+    </select>
+</mapper>
