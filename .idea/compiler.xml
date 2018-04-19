@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="jmqy-app" />
+        <module name="jmqy-core" />
+        <module name="jmqy-facade" />
+        <module name="jmqy-service" />
+        <module name="jmqy-web" />
+        <module name="jmqy-wechat" />
+        <module name="sync-core" />
+        <module name="sync-facade" />
+        <module name="sync-service" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="jmqy-app" target="1.7" />
+      <module name="jmqy-core" target="1.7" />
+      <module name="jmqy-facade" target="1.7" />
+      <module name="jmqy-parent" target="1.7" />
+      <module name="jmqy-service" target="1.7" />
+      <module name="jmqy-web" target="1.6" />
+      <module name="jmqy-wechat" target="1.6" />
+      <module name="sync-core" target="1.7" />
+      <module name="sync-facade" target="1.7" />
+      <module name="sync-parent" target="1.7" />
+      <module name="sync-service" target="1.7" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

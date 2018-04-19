@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="wechatpay-1.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/jmqy-web/src/main/webapp/WEB-INF/lib/wechatpay-1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

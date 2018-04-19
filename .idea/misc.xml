@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/jmqy-web" />
+    <file type="web" url="file://$PROJECT_DIR$/jmqy-wechat" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/jmqy-core/pom.xml" />
+        <option value="$PROJECT_DIR$/jmqy-facade/pom.xml" />
+        <option value="$PROJECT_DIR$/jmqy-parent/pom.xml" />
+        <option value="$PROJECT_DIR$/sync-core/pom.xml" />
+        <option value="$PROJECT_DIR$/sync-facade/pom.xml" />
+        <option value="$PROJECT_DIR$/sync-parent/pom.xml" />
+        <option value="$PROJECT_DIR$/sync-service/pom.xml" />
+        <option value="$PROJECT_DIR$/jmqy-app/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" default="false" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="svn://120.25.166.17/jmqy/bak" />
+                  <option value="svn://120.25.166.17/jmqy/doc" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="svn://120.25.166.17/jmqy/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="mySupportsUserInfoFilter" value="true" />
+  </component>
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
+</project>

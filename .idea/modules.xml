@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/jmqy.iml" filepath="$PROJECT_DIR$/.idea/jmqy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-app/jmqy-app.iml" filepath="$PROJECT_DIR$/jmqy-app/jmqy-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-core/jmqy-core.iml" filepath="$PROJECT_DIR$/jmqy-core/jmqy-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-facade/jmqy-facade.iml" filepath="$PROJECT_DIR$/jmqy-facade/jmqy-facade.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-parent/jmqy-parent.iml" filepath="$PROJECT_DIR$/jmqy-parent/jmqy-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-service/jmqy-service.iml" filepath="$PROJECT_DIR$/jmqy-service/jmqy-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-web/jmqy-web.iml" filepath="$PROJECT_DIR$/jmqy-web/jmqy-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-web/jmqy-web.iml" filepath="$PROJECT_DIR$/jmqy-web/jmqy-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmqy-wechat/jmqy-wechat.iml" filepath="$PROJECT_DIR$/jmqy-wechat/jmqy-wechat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sync-core/sync-core.iml" filepath="$PROJECT_DIR$/sync-core/sync-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sync-facade/sync-facade.iml" filepath="$PROJECT_DIR$/sync-facade/sync-facade.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sync-parent/sync-parent.iml" filepath="$PROJECT_DIR$/sync-parent/sync-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sync-service/sync-service.iml" filepath="$PROJECT_DIR$/sync-service/sync-service.iml" />
+    </modules>
+  </component>
+</project>
