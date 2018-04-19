@@ -483,7 +483,7 @@ public class OrderController extends BaseController {
                     order.setTrackBoardTime(null);
                     order.setDebusTime(null);
                     order.setTrackTime(null);
-                    System.out.println("2");
+                    System.out.println("3");
                 }
             }
         } else {
